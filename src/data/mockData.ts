@@ -14,6 +14,13 @@ export interface GroceryItemData {
   quantity: number;
   unit: string;
   status: 'available' | 'low' | 'missing';
+  category: string;
+}
+
+export interface GroceryCategory {
+  id: string;
+  name: string;
+  emoji: string;
 }
 
 export interface HistoryEntry {
@@ -43,22 +50,40 @@ export const allMeals: Meal[] = [
   { id: 'm12', name: 'Dhokla', tags: ['Light', 'Sweet'], ingredients: ['Besan', 'Yogurt', 'Eno', 'Mustard seeds', 'Green chili'] },
 ];
 
+export const groceryCategories: GroceryCategory[] = [
+  { id: 'masalas', name: 'Masalas & Spices', emoji: '🌶️' },
+  { id: 'dairy', name: 'Milk Products', emoji: '🥛' },
+  { id: 'millets', name: 'Millets & Grains', emoji: '🌾' },
+  { id: 'rice', name: 'Rice & Staples', emoji: '🍚' },
+  { id: 'vegetables', name: 'Vegetables', emoji: '🥕' },
+  { id: 'fruits', name: 'Fruits', emoji: '🍎' },
+];
+
 export const groceryItems: GroceryItemData[] = [
-  { id: 'g1', name: 'Basmati Rice', quantity: 2, unit: 'kg', status: 'available' },
-  { id: 'g2', name: 'Toor Dal', quantity: 0.5, unit: 'kg', status: 'low' },
-  { id: 'g3', name: 'Paneer', quantity: 0, unit: 'g', status: 'missing' },
-  { id: 'g4', name: 'Whole Wheat Flour', quantity: 5, unit: 'kg', status: 'available' },
-  { id: 'g5', name: 'Ghee', quantity: 0.2, unit: 'L', status: 'low' },
-  { id: 'g6', name: 'Tomatoes', quantity: 1, unit: 'kg', status: 'available' },
-  { id: 'g7', name: 'Onions', quantity: 2, unit: 'kg', status: 'available' },
-  { id: 'g8', name: 'Green Chilies', quantity: 0, unit: 'pcs', status: 'missing' },
-  { id: 'g9', name: 'Yogurt', quantity: 0.5, unit: 'L', status: 'available' },
-  { id: 'g10', name: 'Spinach', quantity: 0, unit: 'bunch', status: 'missing' },
-  { id: 'g11', name: 'Mustard Seeds', quantity: 100, unit: 'g', status: 'available' },
-  { id: 'g12', name: 'Cumin Seeds', quantity: 50, unit: 'g', status: 'low' },
-  { id: 'g13', name: 'Turmeric Powder', quantity: 200, unit: 'g', status: 'available' },
-  { id: 'g14', name: 'Cardamom', quantity: 10, unit: 'pcs', status: 'low' },
-  { id: 'g15', name: 'Mango Pulp', quantity: 0, unit: 'can', status: 'missing' },
+  { id: 'g1', name: 'Basmati Rice', quantity: 2, unit: 'kg', status: 'available', category: 'rice' },
+  { id: 'g2', name: 'Toor Dal', quantity: 0.5, unit: 'kg', status: 'low', category: 'rice' },
+  { id: 'g3', name: 'Paneer', quantity: 0, unit: 'g', status: 'missing', category: 'dairy' },
+  { id: 'g4', name: 'Whole Wheat Flour', quantity: 5, unit: 'kg', status: 'available', category: 'millets' },
+  { id: 'g5', name: 'Ghee', quantity: 0.2, unit: 'L', status: 'low', category: 'dairy' },
+  { id: 'g6', name: 'Tomatoes', quantity: 1, unit: 'kg', status: 'available', category: 'vegetables' },
+  { id: 'g7', name: 'Onions', quantity: 2, unit: 'kg', status: 'available', category: 'vegetables' },
+  { id: 'g8', name: 'Green Chilies', quantity: 0, unit: 'pcs', status: 'missing', category: 'vegetables' },
+  { id: 'g9', name: 'Yogurt', quantity: 0.5, unit: 'L', status: 'available', category: 'dairy' },
+  { id: 'g10', name: 'Spinach', quantity: 0, unit: 'bunch', status: 'missing', category: 'vegetables' },
+  { id: 'g11', name: 'Mustard Seeds', quantity: 100, unit: 'g', status: 'available', category: 'masalas' },
+  { id: 'g12', name: 'Cumin Seeds', quantity: 50, unit: 'g', status: 'low', category: 'masalas' },
+  { id: 'g13', name: 'Turmeric Powder', quantity: 200, unit: 'g', status: 'available', category: 'masalas' },
+  { id: 'g14', name: 'Cardamom', quantity: 10, unit: 'pcs', status: 'low', category: 'masalas' },
+  { id: 'g15', name: 'Mango Pulp', quantity: 0, unit: 'can', status: 'missing', category: 'fruits' },
+  { id: 'g16', name: 'Moong Dal', quantity: 1, unit: 'kg', status: 'available', category: 'rice' },
+  { id: 'g17', name: 'Semolina', quantity: 0.5, unit: 'kg', status: 'available', category: 'millets' },
+  { id: 'g18', name: 'Ragi Flour', quantity: 0, unit: 'kg', status: 'missing', category: 'millets' },
+  { id: 'g19', name: 'Banana', quantity: 6, unit: 'pcs', status: 'available', category: 'fruits' },
+  { id: 'g20', name: 'Apple', quantity: 2, unit: 'pcs', status: 'low', category: 'fruits' },
+  { id: 'g21', name: 'Milk', quantity: 1, unit: 'L', status: 'available', category: 'dairy' },
+  { id: 'g22', name: 'Coriander Powder', quantity: 150, unit: 'g', status: 'available', category: 'masalas' },
+  { id: 'g23', name: 'Carrot', quantity: 0.5, unit: 'kg', status: 'available', category: 'vegetables' },
+  { id: 'g24', name: 'Potato', quantity: 3, unit: 'kg', status: 'available', category: 'vegetables' },
 ];
 
 export const historyData: HistoryEntry[] = [
