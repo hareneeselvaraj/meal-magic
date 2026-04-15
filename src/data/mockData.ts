@@ -14,6 +14,13 @@ export interface GroceryItemData {
   quantity: number;
   unit: string;
   status: 'available' | 'low' | 'missing';
+  category: string;
+}
+
+export interface GroceryCategory {
+  id: string;
+  name: string;
+  emoji: string;
 }
 
 export interface HistoryEntry {
