@@ -14,14 +14,14 @@ interface LogEntry {
 }
 
 const presets = [
-  { food: 'Egg Bhurji Toast',    calories: 280, protein: 14, carbs: 32, fat: 10 },
-  { food: 'Oats Upma',           calories: 210, protein: 7,  carbs: 38, fat: 4  },
-  { food: 'Millet Biryani',      calories: 350, protein: 9,  carbs: 60, fat: 7  },
-  { food: 'Rajma Chawal',        calories: 420, protein: 16, carbs: 72, fat: 6  },
-  { food: 'Roasted Makhana',     calories: 100, protein: 4,  carbs: 18, fat: 1  },
-  { food: 'Fruit Chaat Bowl',    calories: 130, protein: 2,  carbs: 30, fat: 0  },
-  { food: 'Masala Dosa',         calories: 290, protein: 6,  carbs: 50, fat: 8  },
-  { food: 'Idli + Sambar',       calories: 200, protein: 7,  carbs: 40, fat: 2  },
+  { food: 'Egg Bhurji Toast', calories: 280, protein: 14, carbs: 32, fat: 10 },
+  { food: 'Oats Upma', calories: 210, protein: 7, carbs: 38, fat: 4 },
+  { food: 'Millet Biryani', calories: 350, protein: 9, carbs: 60, fat: 7 },
+  { food: 'Rajma Chawal', calories: 420, protein: 16, carbs: 72, fat: 6 },
+  { food: 'Roasted Makhana', calories: 100, protein: 4, carbs: 18, fat: 1 },
+  { food: 'Fruit Chaat Bowl', calories: 130, protein: 2, carbs: 30, fat: 0 },
+  { food: 'Masala Dosa', calories: 290, protein: 6, carbs: 50, fat: 8 },
+  { food: 'Idli + Sambar', calories: 200, protein: 7, carbs: 40, fat: 2 },
 ];
 
 const DAILY_GOALS = { calories: 1800, protein: 60, carbs: 225, fat: 60 };
@@ -42,9 +42,9 @@ const NutrientLog = ({ onClose }: NutrientLogProps) => {
   const totals = entries.reduce(
     (acc, e) => ({
       calories: acc.calories + e.calories,
-      protein:  acc.protein  + e.protein,
-      carbs:    acc.carbs    + e.carbs,
-      fat:      acc.fat      + e.fat,
+      protein: acc.protein + e.protein,
+      carbs: acc.carbs + e.carbs,
+      fat: acc.fat + e.fat,
     }),
     { calories: 0, protein: 0, carbs: 0, fat: 0 }
   );
@@ -112,10 +112,10 @@ const NutrientLog = ({ onClose }: NutrientLogProps) => {
       <GlassCard className="p-4">
         <div className="grid grid-cols-4 gap-3">
           {[
-            { label: 'Calories', value: totals.calories, goal: DAILY_GOALS.calories, unit: 'kcal', icon: Flame,    color: 'bg-orange-400' },
-            { label: 'Protein',  value: totals.protein,  goal: DAILY_GOALS.protein,  unit: 'g',    icon: Zap,     color: 'bg-blue-400'   },
-            { label: 'Carbs',    value: totals.carbs,    goal: DAILY_GOALS.carbs,    unit: 'g',    icon: Leaf,    color: 'bg-amber-400'  },
-            { label: 'Fat',      value: totals.fat,      goal: DAILY_GOALS.fat,      unit: 'g',    icon: Droplets,color: 'bg-rose-400'   },
+            { label: 'Calories', value: totals.calories, goal: DAILY_GOALS.calories, unit: 'kcal', icon: Flame, color: 'bg-orange-400' },
+            { label: 'Protein', value: totals.protein, goal: DAILY_GOALS.protein, unit: 'g', icon: Zap, color: 'bg-blue-400' },
+            { label: 'Carbs', value: totals.carbs, goal: DAILY_GOALS.carbs, unit: 'g', icon: Leaf, color: 'bg-amber-400' },
+            { label: 'Fat', value: totals.fat, goal: DAILY_GOALS.fat, unit: 'g', icon: Droplets, color: 'bg-rose-400' },
           ].map(({ label, value, goal, unit, icon: Icon, color }) => (
             <div key={label} className="flex flex-col items-center">
               <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-white mb-1', color)}>
@@ -167,8 +167,8 @@ const NutrientLog = ({ onClose }: NutrientLogProps) => {
           {[
             { label: 'Cal (kcal)', val: calories, set: setCalories },
             { label: 'Protein (g)', val: protein, set: setProtein },
-            { label: 'Carbs (g)',   val: carbs,   set: setCarbs   },
-            { label: 'Fat (g)',     val: fat,     set: setFat     },
+            { label: 'Carbs (g)', val: carbs, set: setCarbs },
+            { label: 'Fat (g)', val: fat, set: setFat },
           ].map(({ label, val, set }) => (
             <div key={label}>
               <p className="text-[10px] text-gray-400 mb-0.5">{label}</p>

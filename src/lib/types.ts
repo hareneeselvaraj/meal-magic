@@ -1,12 +1,171 @@
 import { Timestamp } from "firebase/firestore";
 
-// 1. USERS COLLECTION
+// ═══════════════════════════════════════════════════════
+//  NUTRIMOM PWA — Complete Type System
+// ═══════════════════════════════════════════════════════
+
+// ── User Profiles ────────────────────────────────────────
+export type ProfileType = 'pregnancy' | 'heart_health';
+export type Language = 'en' | 'ta';
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  displayName: string;
+  profileType: ProfileType;
+  weight: number;       // kg
+  height: number;       // cm
+  age: number;
+  deficiencies: string[];  // ['iron', 'vitamin_d', 'ferritin', 'b12']
+  preferredLanguage: Language;
+  avatarUrl?: string;
+  createdAt: Timestamp | Date;
+  updatedAt: Timestamp | Date;
+}
+
+// ── Cuisine Management ────────────────────────────────────
+export interface Cuisine {
+  id: string;
+  name: string;
+  nameInTamil: string;
+  emoji: string;
+  isDefault: boolean;
+  isActive: boolean;
+  createdBy: string;  // userId or 'system'
+  createdAt: Timestamp | Date;
+  updatedAt: Timestamp | Date;
+}
+
+// ── Recipe System ─────────────────────────────────────────
+export type MealSlot = 'morning_juice' | 'breakfast' | 'lunch' | 'snack' | 'dinner';
+export type FlavorTag = 'Spicy' | 'Sweet' | 'Light' | 'Balanced' | 'Iron Rich' | 'Vitamin Rich';
+export type HealthTag = 'pregnancy_safe' | 'heart_friendly' | 'iron_boost' | 'calcium_rich' | 'low_sodium' | 'high_fiber' | 'folate_rich';
+
+export interface RecipeIngredient {
+  name: string;
+  nameInTamil: string;
+  quantity: string;
+  unit: string;
+  isOptional: boolean;
+}
+
+export interface RecipeInstruction {
+  stepNumber: number;
+  text: string;
+  textInTamil: string;
+  durationMinutes: number | null;
+}
+
+export interface NutritionInfo {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+  iron: number;
+  sodium: number;
+}
+
+export interface VideoLink {
+  url: string;
+  platform: 'youtube' | 'instagram';
+  originalLanguage: Language;
+  transcriptEnglish: string;
+  transcriptTamil: string;
+  addedAt: Timestamp | Date;
+}
+
+export interface Recipe {
+  id: string;
+  name: string;
+  nameInTamil: string;
+  cuisineId: string;
+  cuisineName?: string;
+  mealSlot: MealSlot;
+  tags: FlavorTag[];
+  healthTags: HealthTag[];
+  prepTimeMinutes: number;
+  cookTimeMinutes: number;
+  servings: number;
+  ingredients: RecipeIngredient[];
+  instructions: RecipeInstruction[];
+  nutritionPer100g: NutritionInfo;
+  videoLinks: VideoLink[];
+  imageUrl: string | null;
+  createdBy: string;
+  isPublic: boolean;
+  createdAt: Timestamp | Date;
+  updatedAt: Timestamp | Date;
+}
+
+// ── Meal Planning ─────────────────────────────────────────
+export interface MealPlanMeals {
+  morning_juice: string | null;  // recipeId
+  breakfast: string | null;
+  lunch: string | null;
+  snack: string | null;
+  dinner: string | null;
+}
+
+export interface MealPlan {
+  id: string;
+  userId: string;
+  date: string; // ISO date string YYYY-MM-DD
+  meals: MealPlanMeals;
+  completedMeals: MealSlot[];
+  notes: string | null;
+  createdAt: Timestamp | Date;
+}
+
+// ── Meal Slot Configuration ─────────────────────────────
+export interface MealSlotConfig {
+  key: MealSlot;
+  label: string;
+  labelTamil: string;
+  emoji: string;
+  time: string;
+}
+
+export const MEAL_SLOT_CONFIG: MealSlotConfig[] = [
+  { key: 'morning_juice', label: 'Morning Juice/Soup', labelTamil: 'காலை ஜூஸ்', emoji: '🥤', time: '6-7 AM' },
+  { key: 'breakfast', label: 'Light Breakfast', labelTamil: 'காலை உணவு', emoji: '🍳', time: '8-9 AM' },
+  { key: 'lunch', label: 'Lunch', labelTamil: 'மதிய உணவு', emoji: '🍛', time: '12:30-1:30 PM' },
+  { key: 'snack', label: 'Evening Snack', labelTamil: 'மாலை சிற்றுண்டி', emoji: '🥗', time: '4-5 PM' },
+  { key: 'dinner', label: 'Dinner', labelTamil: 'இரவு உணவு', emoji: '🍲', time: '7:30-8:30 PM' },
+];
+
+// ── Health Tips ──────────────────────────────────────────
+export interface HealthTip {
+  id: string;
+  text: string;
+  textTamil: string;
+  forProfiles: ProfileType[];
+  forDeficiencies: string[];
+  emoji: string;
+}
+
+// ── Grocery (Legacy compat) ──────────────────────────────
+export interface GroceryItemData {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  status: 'available' | 'low' | 'missing';
+  category: string;
+}
+
+export interface GroceryCategory {
+  id: string;
+  name: string;
+  iconUrl: string;
+}
+
+// ── Legacy Firestore Types (used by services) ────────────
 export interface UserData {
   name: string;
   createdAt: Timestamp;
 }
 
-// 2. GROCERY INVENTORY
 export interface GroceryItem {
   id?: string;
   name: string;
@@ -17,7 +176,6 @@ export interface GroceryItem {
   lastUpdated: Timestamp;
 }
 
-// 3. MEALS COLLECTION
 export interface MealIngredient {
   name: string;
   quantity: number;
@@ -30,21 +188,18 @@ export interface Meal {
   type: "breakfast" | "lunch" | "snack" | "dinner";
   tags: string[];
   ingredients: MealIngredient[];
-  // Recipe Builder Extensions
   instructions?: string[];
   prepTimeMinutes?: number;
   imageUrl?: string;
 }
 
-// 4. DAILY MEAL LOG
 export interface MealLog {
   id?: string;
   date: Timestamp;
-  meals: string[]; // array of mealIds
+  meals: string[];
   ingredientsUsed: MealIngredient[];
 }
 
-// 5. PURCHASE HISTORY
 export interface PurchaseItem {
   name: string;
   quantity: number;
@@ -58,7 +213,6 @@ export interface Purchase {
   items: PurchaseItem[];
 }
 
-// 6. OCR UPLOADS
 export interface Upload {
   id?: string;
   fileUrl: string;
@@ -66,109 +220,59 @@ export interface Upload {
   status: "processed" | "pending";
 }
 
-// UTILS
+// ── Utility Functions ────────────────────────────────────
 export function standardizeUnit(quantity: number, unit: string): { quantity: number, unit: string } {
   const normalizedUnit = unit.toLowerCase().trim();
-  
   switch (normalizedUnit) {
-    // ---- WEIGHT (Standard: g) ----
-    case "kg":
-    case "kgs":
-    case "kilogram":
+    case "kg": case "kgs": case "kilogram":
       return { quantity: quantity * 1000, unit: "g" };
-    case "mg":
-    case "milligram":
+    case "mg": case "milligram":
       return { quantity: quantity / 1000, unit: "g" };
-    case "g":
-    case "gram":
-    case "grams":
+    case "g": case "gram": case "grams":
       return { quantity, unit: "g" };
-
-    // ---- VOLUME (Standard: ml) ----
-    case "l":
-    case "liter":
-    case "liters":
+    case "l": case "liter": case "liters":
       return { quantity: quantity * 1000, unit: "ml" };
-    case "ml":
-    case "milliliter":
+    case "ml": case "milliliter":
       return { quantity, unit: "ml" };
-
-    // ---- COUNT (Standard: count) ----
-    case "pc":
-    case "pcs":
-    case "pieces":
-    case "count":
-    case "whole":
-    case "egg":
-    case "eggs":
+    case "pc": case "pcs": case "pieces": case "count": case "whole": case "egg": case "eggs":
       return { quantity, unit: "count" };
-
-    // ---- APPROXIMATIONS ----
-    case "onion":
-    case "onions":
-      // Approx: 1 medium onion = 150g
+    case "onion": case "onions":
       return { quantity: quantity * 150, unit: "g" };
-    case "tomato":
-    case "tomatoes":
-      // Approx: 1 medium tomato = 125g
+    case "tomato": case "tomatoes":
       return { quantity: quantity * 125, unit: "g" };
-    case "potato":
-    case "potatoes":
-      // Approx: 1 medium potato = 150g
+    case "potato": case "potatoes":
       return { quantity: quantity * 150, unit: "g" };
-      
     default:
-      // Fallback
       return { quantity, unit: normalizedUnit };
   }
 }
 
-// Convert from standard unit to target custom unit (like g -> kg)
 export function fromStandardUnit(valueInStandard: number, targetUnit: string): number {
-  const normalizedTarget = targetUnit.toLowerCase().trim();
-
-  // Weight
-  if (normalizedTarget === "kg" || normalizedTarget === "kgs") return valueInStandard / 1000;
-  if (normalizedTarget === "g" || normalizedTarget === "grams") return valueInStandard;
-  if (normalizedTarget === "mg" || normalizedTarget === "milligrams") return valueInStandard * 1000;
-
-  // Volume
-  if (normalizedTarget === "l" || normalizedTarget === "liters") return valueInStandard / 1000;
-  if (normalizedTarget === "ml" || normalizedTarget === "milliliters") return valueInStandard;
-
-  return valueInStandard; // For counts or unknowns
+  const t = targetUnit.toLowerCase().trim();
+  if (t === "kg" || t === "kgs") return valueInStandard / 1000;
+  if (t === "g" || t === "grams") return valueInStandard;
+  if (t === "mg" || t === "milligrams") return valueInStandard * 1000;
+  if (t === "l" || t === "liters") return valueInStandard / 1000;
+  if (t === "ml" || t === "milliliters") return valueInStandard;
+  return valueInStandard;
 }
 
-// Smart Auto-Display (BEST UX) -> 1200g becomes "1.2 kg"
 export function smartDisplay(quantity: number, standardUnit: string): { value: number | string, unit: string } {
   if (standardUnit === "g") {
-    if (quantity >= 1000) {
-      return { value: Number((quantity / 1000).toFixed(2)), unit: "kg" };
-    }
+    if (quantity >= 1000) return { value: Number((quantity / 1000).toFixed(2)), unit: "kg" };
     return { value: Number(quantity.toFixed(1)), unit: "g" };
   }
-  
   if (standardUnit === "ml") {
-    if (quantity >= 1000) {
-      return { value: Number((quantity / 1000).toFixed(2)), unit: "L" };
-    }
+    if (quantity >= 1000) return { value: Number((quantity / 1000).toFixed(2)), unit: "L" };
     return { value: Number(quantity.toFixed(1)), unit: "ml" };
   }
-
-  // Count/Pieces or others
   return { value: quantity, unit: standardUnit };
 }
 
-// Thresholds for status calculation (standardized to g/ml/count)
 export function getStatus(name: string, quantity: number, unit: string): "available" | "low" | "out" {
   if (quantity <= 0) return "out";
-  
   let lowThreshold = 0;
-  if (unit === 'g' || unit === 'ml') {
-    lowThreshold = 200; // e.g., low if <= 200g or 200ml
-  } else if (unit === 'count') {
-    lowThreshold = 3; // e.g., low if <= 3 count
-  }
-  
+  if (unit === 'g' || unit === 'ml') lowThreshold = 200;
+  else if (unit === 'count') lowThreshold = 3;
   return quantity <= lowThreshold ? "low" : "available";
 }

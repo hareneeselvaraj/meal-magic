@@ -16,11 +16,11 @@ interface IngredientEntry {
   qty: string;
 }
 
-const mealSlots: { value: MealSlot; label: string; emoji: string }[] = [
+const mealSlots: { value: MealSlot; label: string; emoji?: string; iconUrl?: string }[] = [
   { value: 'breakfast', label: 'Breakfast', emoji: '🌅' },
   { value: 'lunch', label: 'Lunch', emoji: '☀️' },
   { value: 'snack', label: 'Snack', emoji: '🍵' },
-  { value: 'dinner', label: 'Dinner', emoji: '🌙' },
+  { value: 'dinner', label: 'Dinner', iconUrl: 'https://img.icons8.com/fluency/48/night.png' },
 ];
 
 const flavorTags: { value: FlavorTag; label: string; color: string }[] = [
@@ -246,7 +246,7 @@ Tags should be from: Spicy, Sweet, Light, Balanced. No markdown, just raw JSON.`
                   : 'bg-white/60 text-gray-500 border-gray-200'
               )}
             >
-              {s.emoji}<br/>{s.label}
+              {s.emoji}<br />{s.label}
             </button>
           ))}
         </div>

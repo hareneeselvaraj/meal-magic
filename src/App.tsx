@@ -5,8 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import { NutriMomProvider } from "@/context/NutriMomContext";
 import { GroceryProvider } from "@/context/GroceryContext";
-import { RecipeProvider } from "@/context/RecipeContext";
 
 const queryClient = new QueryClient();
 
@@ -15,17 +15,16 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <GroceryProvider>
-        <RecipeProvider>
+      <NutriMomProvider>
+        <GroceryProvider>
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
-        </RecipeProvider>
-      </GroceryProvider>
+        </GroceryProvider>
+      </NutriMomProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

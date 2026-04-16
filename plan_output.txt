@@ -1,0 +1,738 @@
+
+🍃 NUTRIMOM PWA
+Personalized Health-Focused Meal Planning Application
+IMPLEMENTATION PLAN
+Technical Architecture & Development Guide
+Version 1.0 | April 2026
+
+📋 TABLE OF CONTENTS
+1. Executive Summary & User Profiles
+2. Application Architecture Overview
+3. Technology Stack
+4. Database Schema Design
+5. Core Feature Modules
+   5.1 Cuisine Management (CRUD)
+   5.2 Recipe Management
+   5.3 Meal Planning System
+   5.4 Video Link Management & Translation
+   5.5 PDF Generation (Multilingual)
+6. PWA Configuration & Mobile Optimization
+7. API Endpoints
+8. UI/UX Components
+9. Implementation Phases & Timeline
+10. File Structure
+11. Environment Variables
+12. Testing Strategy
+13. Deployment Guide
+
+1. EXECUTIVE SUMMARY & USER PROFILES
+1.1 Application Purpose
+NutriMom PWA is a personalized health-focused meal planning application designed specifically for two primary users with distinct health requirements. The application provides culturally diverse cuisine options (Indian, Chinese, Italian, Japanese) with full CRUD operations, multilingual support (English/Tamil), video recipe integration with translation capabilities, and PDF export functionality.
+1.2 Primary User Profiles
+User 1: Primary User (Pregnancy Focus)
+User 2: Mother (Heart Health Focus)
+1.3 Daily Meal Structure
+
+2. APPLICATION ARCHITECTURE OVERVIEW
+2.1 High-Level Architecture Diagram
+The application follows a modern three-tier architecture with PWA capabilities:
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                         CLIENT LAYER (PWA)                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌────────────┐ │
+│  │   React +   │  │   Service   │  │   IndexedDB │  │   Offline  │ │
+│  │  TypeScript │  │   Worker    │  │   Cache     │  │   Support  │ │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └────────────┘ │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                         API LAYER (Backend)                         │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌────────────┐ │
+│  │  Node.js +  │  │  Translation│  │    PDF      │  │   Video    │ │
+│  │   Express   │  │   Service   │  │  Generator  │  │  Processor │ │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └────────────┘ │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                         DATA LAYER                                  │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌────────────┐ │
+│  │  Firebase   │  │  Firestore  │  │   Cloud     │  │  Google    │ │
+│  │    Auth     │  │   Database  │  │   Storage   │  │  Translate │ │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └────────────┘ │
+└─────────────────────────────────────────────────────────────────────┘
+
+
+3. TECHNOLOGY STACK
+3.1 Frontend Stack
+3.2 Backend Stack
+3.3 Database & Cloud Services
+
+4. DATABASE SCHEMA DESIGN
+4.1 Firestore Collections Structure
+The database uses a hierarchical NoSQL structure optimized for mobile reads and real-time sync:
+Collection: users/{userId}
+{
+  email: string,
+  displayName: string,
+  profileType: 'pregnancy' | 'heart_health',
+  weight: number,           // in kg
+  height: number,           // in cm
+  age: number,
+  deficiencies: string[],   // ['iron', 'vitamin_d', 'ferritin', 'b12']
+  preferredLanguage: 'en' | 'ta',
+  createdAt: Timestamp,
+  updatedAt: Timestamp
+}
+Collection: cuisines
+{
+  id: string,              // auto-generated
+  name: string,            // 'Indian', 'Chinese', 'Italian', 'Japanese'
+  nameInTamil: string,     // 'இந்திய', 'சீன', 'இத்தாலிய', 'ஜப்பானிய'
+  emoji: string,           // '🇮🇳', '🇨🇳', '🇮🇹', '🇯🇵'
+  isDefault: boolean,      // true for system cuisines
+  isActive: boolean,
+  createdBy: string,       // userId or 'system'
+  createdAt: Timestamp,
+  updatedAt: Timestamp
+}
+Collection: recipes
+{
+  id: string,
+  name: string,
+  nameInTamil: string,
+  cuisineId: string,       // Reference to cuisine
+  mealSlot: 'morning_juice' | 'breakfast' | 'lunch' | 'snack' | 'dinner',
+  tags: string[],          // ['spicy', 'sweet', 'light', 'iron_rich', 'heart_healthy']
+  healthTags: string[],    // ['pregnancy_safe', 'heart_friendly', 'iron_boost']
+  prepTimeMinutes: number,
+  cookTimeMinutes: number,
+  servings: number,
+  ingredients: [{
+    name: string,
+    nameInTamil: string,
+    quantity: string,
+    unit: string,
+    isOptional: boolean
+  }],
+  instructions: [{
+    stepNumber: number,
+    text: string,
+    textInTamil: string,
+    durationMinutes: number | null
+  }],
+  nutritionPer100g: {
+    calories: number,
+    protein: number,
+    carbs: number,
+    fat: number,
+    fiber: number,
+    iron: number,
+    sodium: number
+  },
+  videoLinks: [{
+    url: string,
+    platform: 'youtube' | 'instagram',
+    originalLanguage: 'ta' | 'en',
+    transcriptEnglish: string,
+    transcriptTamil: string,
+    addedAt: Timestamp
+  }],
+  imageUrl: string | null,
+  createdBy: string,
+  isPublic: boolean,
+  createdAt: Timestamp,
+  updatedAt: Timestamp
+}
+Collection: mealPlans/{userId}/plans
+{
+  id: string,
+  date: Timestamp,
+  meals: {
+    morning_juice: string | null,  // recipeId
+    breakfast: string | null,
+    lunch: string | null,
+    snack: string | null,
+    dinner: string | null
+  },
+  completedMeals: string[],       // list of completed meal slots
+  notes: string | null,
+  createdAt: Timestamp
+}
+
+5. CORE FEATURE MODULES
+5.1 Cuisine Management (CRUD)
+The cuisine module provides full Create, Read, Update, Delete operations for cuisine categories.
+API Endpoints:
+Service Implementation (src/services/cuisineService.ts):
+import { db } from '../lib/firebase';
+import { collection, doc, getDocs, addDoc, updateDoc, query, where } from 'firebase/firestore';
+
+export interface Cuisine {
+  id: string;
+  name: string;
+  nameInTamil: string;
+  emoji: string;
+  isDefault: boolean;
+  isActive: boolean;
+  createdBy: string;
+}
+
+export const cuisineService = {
+  // CREATE
+  async create(cuisine: Omit<Cuisine, 'id'>): Promise<string> {
+    const docRef = await addDoc(collection(db, 'cuisines'), {
+      ...cuisine,
+      isDefault: false,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+    return docRef.id;
+  },
+
+  // READ ALL
+  async getAll(includeInactive = false): Promise<Cuisine[]> {
+    const q = includeInactive
+      ? collection(db, 'cuisines')
+      : query(collection(db, 'cuisines'), where('isActive', '==', true));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Cuisine));
+  },
+
+  // UPDATE
+  async update(id: string, updates: Partial<Cuisine>): Promise<void> {
+    await updateDoc(doc(db, 'cuisines', id), {
+      ...updates,
+      updatedAt: new Date()
+    });
+  },
+
+  // DELETE (soft)
+  async delete(id: string): Promise<void> {
+    await updateDoc(doc(db, 'cuisines', id), {
+      isActive: false,
+      updatedAt: new Date()
+    });
+  }
+};
+UI Component (src/components/CuisineManager.tsx):
+// Key features:
+// - Grid display with emoji + name
+// - Add new cuisine modal with Tamil name auto-translation
+// - Edit existing cuisine
+// - Delete with confirmation (cannot delete default cuisines)
+// - Mobile-friendly card layout
+
+interface CuisineCardProps {
+  cuisine: Cuisine;
+  onEdit: (cuisine: Cuisine) => void;
+  onDelete: (id: string) => void;
+}
+
+// See full implementation in codebase
+
+5.2 Recipe Management
+Recipes are the core entity, supporting multiple cuisines, health tags, step-by-step instructions, and nutritional information.
+Recipe Creation Flow:
+User selects cuisine type from dropdown
+User enters recipe name (auto-translated to Tamil)
+User selects meal slot and health tags
+User adds ingredients with quantities
+User adds cooking steps with optional timers
+User optionally adds video links (YouTube/Instagram)
+System auto-extracts and translates video transcripts
+Recipe saved with all translations
+Health Tags for Target Users:
+
+5.3 Meal Planning System
+The meal planning system allows users to plan their daily meals across the 5 defined slots, with intelligent recommendations based on their health profile.
+Daily Meal Plan Interface:
+// src/pages/MealPlanner.tsx
+
+const mealSlots = [
+  { key: 'morning_juice', label: 'Morning Juice/Soup', emoji: '🥤', time: '6-7 AM' },
+  { key: 'breakfast', label: 'Light Breakfast', emoji: '🍳', time: '8-9 AM' },
+  { key: 'lunch', label: 'Lunch', emoji: '🍛', time: '12:30-1:30 PM' },
+  { key: 'snack', label: 'Evening Snack', emoji: '🥗', time: '4-5 PM' },
+  { key: 'dinner', label: 'Dinner', emoji: '🍲', time: '7:30-8:30 PM' }
+];
+
+// Filter recipes based on:
+// 1. User's health profile (pregnancy vs heart health)
+// 2. Selected cuisine
+// 3. Meal slot appropriateness
+// 4. Nutritional goals (iron, vitamins for deficiencies)
+5.4 Video Link Management & Translation
+This is a critical feature that allows storing YouTube/Instagram video links with automatic transcript extraction and Tamil↔English translation.
+Video Processing Flow:
+
+┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐
+│   User Pastes    │────▶│  Extract Video   │────▶│  Detect Source   │
+│   Video URL      │     │  Platform Type   │     │  Language        │
+└──────────────────┘     └──────────────────┘     └──────────────────┘
+                                                           │
+                                                           ▼
+┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐
+│  Store Both      │◀────│  Translate to    │◀────│  Fetch Original  │
+│  Transcripts     │     │  Other Language  │     │  Transcript/     │
+│  in Firestore    │     │  (Google API)    │     │  Captions        │
+└──────────────────┘     └──────────────────┘     └──────────────────┘
+
+Backend Service (functions/src/videoService.ts):
+import { YoutubeTranscript } from 'youtube-transcript';
+import { Translate } from '@google-cloud/translate/build/src/v2';
+
+const translate = new Translate();
+
+export async function processVideoLink(url: string): Promise<VideoData> {
+  const platform = detectPlatform(url);
+  const videoId = extractVideoId(url, platform);
+  
+  // 1. Fetch transcript
+  let transcript = '';
+  let originalLanguage: 'en' | 'ta' = 'ta';
+  
+  if (platform === 'youtube') {
+    const transcriptData = await YoutubeTranscript.fetchTranscript(videoId);
+    transcript = transcriptData.map(t => t.text).join(' ');
+    originalLanguage = await detectLanguage(transcript);
+  }
+  
+  // 2. Translate to other language
+  const targetLang = originalLanguage === 'ta' ? 'en' : 'ta';
+  const [translation] = await translate.translate(transcript, targetLang);
+  
+  return {
+    url,
+    platform,
+    originalLanguage,
+    transcriptEnglish: originalLanguage === 'en' ? transcript : translation,
+    transcriptTamil: originalLanguage === 'ta' ? transcript : translation
+  };
+}
+
+async function detectLanguage(text: string): Promise<'en' | 'ta'> {
+  const [detection] = await translate.detect(text);
+  return detection.language === 'ta' ? 'ta' : 'en';
+}
+
+5.5 PDF Generation (Multilingual)
+The PDF generator creates downloadable recipe documents in either English or Tamil, including all cooking instructions, ingredients, and optionally the video transcript.
+PDF Generation Service (functions/src/pdfGenerator.ts):
+import PDFDocument from 'pdfkit';
+import { Storage } from '@google-cloud/storage';
+
+// Tamil font registration (Noto Sans Tamil for Unicode support)
+const TAMIL_FONT = 'NotoSansTamil-Regular.ttf';
+const ENGLISH_FONT = 'NotoSans-Regular.ttf';
+
+export async function generateRecipePDF(
+  recipe: Recipe,
+  language: 'en' | 'ta',
+  includeVideo: boolean = true
+): Promise<string> {
+  const doc = new PDFDocument({ size: 'A4', margin: 50 });
+  const chunks: Buffer[] = [];
+  
+  // Select language-appropriate content
+  const recipeName = language === 'ta' ? recipe.nameInTamil : recipe.name;
+  const font = language === 'ta' ? TAMIL_FONT : ENGLISH_FONT;
+  
+  // Register Tamil font
+  doc.registerFont('main', `./fonts/${font}`);
+  doc.font('main');
+  
+  // Header
+  doc.fontSize(24).text(recipeName, { align: 'center' });
+  doc.moveDown();
+  
+  // Cuisine & Meal Slot
+  const cuisineLabel = language === 'ta' ? 'சமையல் வகை' : 'Cuisine';
+  doc.fontSize(12).text(`${cuisineLabel}: ${recipe.cuisineName}`);
+  
+  // Ingredients Section
+  const ingredientsTitle = language === 'ta' ? 'பொருட்கள்' : 'Ingredients';
+  doc.fontSize(16).text(ingredientsTitle);
+  recipe.ingredients.forEach(ing => {
+    const name = language === 'ta' ? ing.nameInTamil : ing.name;
+    doc.fontSize(11).text(`• ${ing.quantity} ${ing.unit} ${name}`);
+  });
+  
+  // Instructions Section
+  const instructionsTitle = language === 'ta' ? 'சமைக்கும் முறை' : 'Cooking Instructions';
+  doc.fontSize(16).text(instructionsTitle);
+  recipe.instructions.forEach((step, i) => {
+    const text = language === 'ta' ? step.textInTamil : step.text;
+    doc.fontSize(11).text(`${i + 1}. ${text}`);
+  });
+  
+  // Video Transcript (optional)
+  if (includeVideo && recipe.videoLinks.length > 0) {
+    const video = recipe.videoLinks[0];
+    const transcriptTitle = language === 'ta' ? 'வீடியோ விளக்கம்' : 'Video Transcript';
+    const transcript = language === 'ta' ? video.transcriptTamil : video.transcriptEnglish;
+    
+    doc.addPage();
+    doc.fontSize(16).text(transcriptTitle);
+    doc.fontSize(10).text(transcript, { lineGap: 4 });
+  }
+  
+  // Save to Cloud Storage
+  const fileName = `recipes/${recipe.id}_${language}.pdf`;
+  // ... upload logic
+  return downloadUrl;
+}
+Tamil Font Requirements:
+Download Noto Sans Tamil from Google Fonts
+Place in functions/fonts/ directory
+Register with PDFKit before use
+Include in Cloud Functions deployment
+
+6. PWA CONFIGURATION & MOBILE OPTIMIZATION
+6.1 PWA Manifest (public/manifest.json)
+{
+  "name": "NutriMom - Healthy Meal Planner",
+  "short_name": "NutriMom",
+  "description": "Personalized meal planning for pregnancy & heart health",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0fdf4",
+  "theme_color": "#22c55e",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/icons/icon-72.png", "sizes": "72x72", "type": "image/png" },
+    { "src": "/icons/icon-96.png", "sizes": "96x96", "type": "image/png" },
+    { "src": "/icons/icon-128.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "/icons/icon-144.png", "sizes": "144x144", "type": "image/png" },
+    { "src": "/icons/icon-152.png", "sizes": "152x152", "type": "image/png" },
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-384.png", "sizes": "384x384", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "screenshots": [
+    { "src": "/screenshots/home.png", "sizes": "1080x1920", "type": "image/png" }
+  ],
+  "categories": ["health", "food", "lifestyle"]
+}
+6.2 Service Worker (src/sw.ts)
+import { precacheAndRoute } from 'workbox-precaching';
+import { registerRoute } from 'workbox-routing';
+import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
+import { ExpirationPlugin } from 'workbox-expiration';
+
+// Precache static assets
+precacheAndRoute(self.__WB_MANIFEST);
+
+// Cache API responses
+registerRoute(
+  ({ url }) => url.pathname.startsWith('/api/'),
+  new NetworkFirst({
+    cacheName: 'api-cache',
+    plugins: [new ExpirationPlugin({ maxEntries: 100, maxAgeSeconds: 86400 })]
+  })
+);
+
+// Cache images
+registerRoute(
+  ({ request }) => request.destination === 'image',
+  new CacheFirst({
+    cacheName: 'image-cache',
+    plugins: [new ExpirationPlugin({ maxEntries: 50, maxAgeSeconds: 2592000 })]
+  })
+);
+
+// Cache fonts
+registerRoute(
+  ({ url }) => url.pathname.includes('/fonts/'),
+  new CacheFirst({ cacheName: 'font-cache' })
+);
+6.3 Mobile-First CSS Utilities
+/* tailwind.config.js additions */
+theme: {
+  extend: {
+    screens: {
+      'xs': '375px',
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px'
+    },
+    spacing: {
+      'safe-bottom': 'env(safe-area-inset-bottom)',
+      'safe-top': 'env(safe-area-inset-top)'
+    }
+  }
+}
+
+/* Critical mobile optimizations */
+.touch-manipulation { touch-action: manipulation; }
+.tap-highlight-none { -webkit-tap-highlight-color: transparent; }
+.safe-padding { padding-bottom: env(safe-area-inset-bottom); }
+6.4 Mobile UX Guidelines
+Minimum touch target: 44x44px for all interactive elements
+Bottom navigation bar (fixed) for primary actions
+Swipe gestures for common actions (delete, complete meal)
+Pull-to-refresh on list pages
+Skeleton loaders instead of spinners
+Haptic feedback on key actions (where supported)
+Offline indicator banner when disconnected
+
+7. API ENDPOINTS
+7.1 Complete API Reference
+7.2 Query Parameters for Recipe Listing
+
+8. UI/UX COMPONENTS
+8.1 Component Hierarchy
+src/components/
+├── layout/
+│   ├── BottomNav.tsx           # Fixed bottom navigation
+│   ├── Header.tsx              # App header with profile
+│   ├── FloatingBackground.tsx  # Animated gradient blobs
+│   └── SafeAreaWrapper.tsx     # iOS safe area handler
+├── shared/
+│   ├── GlassCard.tsx           # Glassmorphism card
+│   ├── StatusBadge.tsx         # Colored status indicator
+│   ├── LanguageToggle.tsx      # EN/TA toggle switch
+│   ├── LoadingSkeleton.tsx     # Skeleton loader
+│   └── EmptyState.tsx          # Empty list placeholder
+├── cuisine/
+│   ├── CuisineGrid.tsx         # Grid of cuisine cards
+│   ├── CuisineCard.tsx         # Single cuisine display
+│   ├── CuisineForm.tsx         # Add/Edit cuisine modal
+│   └── CuisineSelector.tsx     # Dropdown selector
+├── recipe/
+│   ├── RecipeCard.tsx          # Recipe preview card
+│   ├── RecipeDetail.tsx        # Full recipe view
+│   ├── RecipeForm.tsx          # Create/edit recipe
+│   ├── IngredientList.tsx      # Ingredient editor
+│   ├── InstructionEditor.tsx   # Step editor with timers
+│   ├── VideoLinkManager.tsx    # Add/view video links
+│   └── NutritionBadges.tsx     # Nutrition info display
+├── meal-plan/
+│   ├── DayPlanner.tsx          # Single day meal slots
+│   ├── MealSlotCard.tsx        # Individual meal slot
+│   ├── RecipeSelector.tsx      # Modal to select recipe
+│   └── WeekView.tsx            # Weekly calendar view
+├── pdf/
+│   ├── PDFDownloadButton.tsx   # Download trigger
+│   └── LanguageSelector.tsx    # EN/TA selection modal
+└── profile/
+    ├── HealthProfile.tsx       # User health data
+    ├── DeficiencyTags.tsx      # Visual deficiency display
+    └── ProfileSwitcher.tsx     # Switch between users
+8.2 Key Screen Layouts
+Home Dashboard:
+Greeting with user name and date
+Health tip of the day (based on deficiencies)
+Today's 5 meal cards with recipe preview
+Quick stats (meals completed, nutrition goals)
+Recipe Browser:
+Cuisine filter chips (Indian, Chinese, Italian, Japanese, Custom)
+Meal slot filter tabs
+Health tag toggle (show only relevant for my profile)
+Grid/List view toggle
+FAB button for add new recipe
+Recipe Detail:
+Hero image (if available)
+Recipe name with cuisine emoji
+Health tags and nutrition badges
+Servings adjuster (scales ingredients)
+Tabbed sections: Ingredients | Instructions | Video
+Sticky bottom bar: Download PDF | Add to Meal Plan
+
+9. IMPLEMENTATION PHASES & TIMELINE
+9.1 Phase Overview
+Total Estimated Duration: 10 weeks
+9.2 Phase 1: Project Setup (Week 1)
+Initialize React + Vite + TypeScript project
+Set up TailwindCSS with custom theme (greens for health)
+Configure Firebase project (Auth, Firestore, Storage, Functions)
+Set up React Query for data fetching
+Create basic layout components (BottomNav, Header)
+Implement basic routing structure
+Set up user authentication (Firebase Auth)
+Create user profile schema with health data
+9.3 Phase 2: Cuisine & Recipe CRUD (Weeks 2-3)
+Implement cuisine Firestore collection and service
+Build cuisine management UI (list, add, edit, delete)
+Seed default cuisines (Indian, Chinese, Italian, Japanese)
+Implement recipe Firestore collection and service
+Build recipe creation form with multi-step wizard
+Implement ingredient management with quantity parsing
+Build instruction editor with timer integration
+Create recipe browser with filters
+Build recipe detail view
+9.4 Phase 3: Meal Planning (Weeks 4-5)
+Design meal plan data structure
+Build day planner UI with 5 meal slots
+Implement recipe selector modal
+Add meal completion tracking
+Build weekly calendar view
+Implement smart suggestions based on health profile
+
+9.5 Phase 4: Video Integration (Weeks 6-7)
+Set up Google Cloud Translate API
+Implement YouTube transcript extraction (Cloud Function)
+Build video link input UI in recipe form
+Implement language detection for transcripts
+Build translation service (Tamil ↔ English)
+Store dual transcripts in recipe document
+Build video viewer UI with transcript toggle
+9.6 Phase 5: PDF Generation (Week 8)
+Set up PDFKit in Cloud Functions
+Register Tamil Unicode font (Noto Sans Tamil)
+Build PDF template with recipe layout
+Implement language selection before download
+Add video transcript section to PDF
+Upload generated PDFs to Cloud Storage
+Build download button with progress indicator
+9.7 Phase 6: PWA & Mobile (Week 9)
+Configure Workbox service worker
+Set up offline caching strategy
+Generate PWA icons in all sizes
+Optimize touch targets (min 44px)
+Implement pull-to-refresh
+Add swipe actions for common operations
+Test on iOS Safari and Android Chrome
+Add install prompt banner
+
+10. FILE STRUCTURE
+nutrimom-pwa/
+├── public/
+│   ├── manifest.json
+│   ├── icons/                  # PWA icons (72-512px)
+│   └── fonts/
+│       ├── NotoSans-Regular.ttf
+│       └── NotoSansTamil-Regular.ttf
+├── src/
+│   ├── main.tsx
+│   ├── App.tsx
+│   ├── index.css
+│   ├── sw.ts                   # Service worker
+│   ├── lib/
+│   │   ├── firebase.ts         # Firebase config
+│   │   ├── types.ts            # TypeScript interfaces
+│   │   └── utils.ts            # Helper functions
+│   ├── hooks/
+│   │   ├── useCuisines.ts
+│   │   ├── useRecipes.ts
+│   │   ├── useMealPlan.ts
+│   │   └── useTranslation.ts
+│   ├── services/
+│   │   ├── cuisineService.ts
+│   │   ├── recipeService.ts
+│   │   ├── mealPlanService.ts
+│   │   ├── videoService.ts
+│   │   └── pdfService.ts
+│   ├── components/             # (See Section 8)
+│   ├── pages/
+│   │   ├── Home.tsx
+│   │   ├── Recipes.tsx
+│   │   ├── RecipeDetail.tsx
+│   │   ├── RecipeForm.tsx
+│   │   ├── MealPlanner.tsx
+│   │   ├── Cuisines.tsx
+│   │   ├── Profile.tsx
+│   │   └── Settings.tsx
+│   └── store/
+│       └── useAppStore.ts      # Zustand global state
+├── functions/                   # Firebase Cloud Functions
+│   ├── src/
+│   │   ├── index.ts
+│   │   ├── videoProcessor.ts
+│   │   ├── pdfGenerator.ts
+│   │   └── translator.ts
+│   ├── fonts/                  # Tamil fonts for PDF
+│   └── package.json
+├── firestore.rules
+├── storage.rules
+├── vite.config.ts
+├── tailwind.config.js
+├── tsconfig.json
+└── package.json
+
+11. ENVIRONMENT VARIABLES
+11.1 Frontend (.env.local)
+# Firebase Web Config
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+
+# App Config
+VITE_APP_NAME=NutriMom
+VITE_DEFAULT_LANGUAGE=en
+11.2 Backend (functions/.env)
+# Google Cloud
+GOOGLE_CLOUD_PROJECT=your_project_id
+GOOGLE_TRANSLATE_API_KEY=your_translate_key
+
+# Firebase Admin
+FIREBASE_SERVICE_ACCOUNT=./service-account.json
+
+# PDF Generation
+PDF_STORAGE_BUCKET=your_project.appspot.com
+TAMIL_FONT_PATH=./fonts/NotoSansTamil-Regular.ttf
+
+12. TESTING STRATEGY
+12.1 Testing Layers
+12.2 Critical Test Cases
+Cuisine CRUD operations (add, edit, delete)
+Recipe creation with all fields
+Video URL parsing (YouTube/Instagram)
+Translation service (Tamil ↔ English)
+PDF generation with Tamil font rendering
+Meal plan creation and editing
+Offline functionality
+PWA installation flow
+
+13. DEPLOYMENT GUIDE
+13.1 Firebase Hosting Setup
+# Install Firebase CLI
+npm install -g firebase-tools
+
+# Login and initialize
+firebase login
+firebase init
+# Select: Firestore, Functions, Hosting, Storage
+
+# Deploy
+npm run build
+firebase deploy
+13.2 CI/CD Pipeline (GitHub Actions)
+# .github/workflows/deploy.yml
+name: Deploy to Firebase
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run build
+      - run: npm run test
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          channelId: live
+13.3 Post-Deployment Checklist
+Verify PWA installation on iOS and Android
+Test offline functionality
+Verify PDF generation in both languages
+Test video transcript extraction
+Verify Firestore security rules
+Set up Firebase monitoring and alerts
+Configure CORS for Cloud Functions
+
+🍃 END OF IMPLEMENTATION PLAN 🍃
+Document Version 1.0 | Prepared for Junior Developers

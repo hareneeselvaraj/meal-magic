@@ -26,6 +26,7 @@ export interface GroceryCategory {
   id: string;
   name: string;
   emoji: string;
+  iconUrl?: string;
 }
 
 export interface HistoryEntry {
@@ -607,6 +608,28 @@ export const allMeals: Meal[] = recipes.map(r => ({
   tags: r.tags,
   ingredients: r.ingredients.map(i => i.name),
 }));
+export const groceryCategories: GroceryCategory[] = [
+  { id: 'vegetables', name: 'Fresh Vegetables', emoji: '🥬', iconUrl: '/categories/veg.jpg' },
+  { id: 'fruits', name: 'Fresh Fruits', emoji: '🍎', iconUrl: '/categories/fruits.jpg' },
+  { id: 'dairy', name: 'Dairy, Bread and Eggs', emoji: '🥛', iconUrl: '/categories/dairy.jpg' },
+  { id: 'meat', name: 'Meat and Seafood', emoji: '🥩', iconUrl: '/categories/meat.jpg' },
+  { id: 'rice', name: 'Atta, Rice and Dal', emoji: '🌾', iconUrl: '/categories/rice.jpg' },
+  { id: 'masalas', name: 'Masalas', emoji: '🌶️', iconUrl: '/categories/masalas.jpg' },
+  { id: 'oils', name: 'Oils and Ghee', emoji: '🛢️', iconUrl: '/categories/oils.jpg' },
+  { id: 'cereals', name: 'Cereals and Breakfast', emoji: '🥣', iconUrl: '/categories/cereals.jpg' },
+  { id: 'drinks', name: 'Cold Drinks', emoji: '🥤', iconUrl: '/categories/drinks.jpg' },
+  { id: 'icecream', name: 'Ice Creams', emoji: '🍦', iconUrl: '/categories/icecream.jpg' },
+  { id: 'chips', name: 'Chips and Namkeens', emoji: '🍟', iconUrl: '/categories/chips.jpg' },
+  { id: 'choco', name: 'Chocolates', emoji: '🍫', iconUrl: '/categories/choco.jpg' },
+  { id: 'biscuits', name: 'Biscuits and Cakes', emoji: '🍪', iconUrl: '/categories/biscuits.jpg' },
+  { id: 'teacoffee', name: 'Tea, Coffee and Milk Drinks', emoji: '☕', iconUrl: '/categories/teacoffee.jpg' },
+  { id: 'sauces', name: 'Sauces and Spreads', emoji: '🥫', iconUrl: '/categories/sauces.jpg' },
+  { id: 'sweets', name: 'Sweet Corner', emoji: '🍬', iconUrl: '/categories/sweets.jpg' },
+  { id: 'noodles', name: 'Noodles, Pasta, Vermi...', emoji: '🍝', iconUrl: '/categories/noodles.jpg' },
+  { id: 'frozen', name: 'Frozen Food', emoji: '❄️', iconUrl: '/categories/frozen.jpg' },
+  { id: 'dryfruits', name: 'Dry Fruits and Seeds Mix', emoji: '🥜', iconUrl: '/categories/dryfruits.jpg' },
+  { id: 'paan', name: 'Paan Corner', emoji: '🍃', iconUrl: '/categories/paan.jpg' },
+];
 
 // ─── Today's suggested meals (default plan) ───
 export const todaysMeals = {
@@ -617,15 +640,6 @@ export const todaysMeals = {
 };
 
 // ─── Grocery data (unchanged) ───
-export const groceryCategories: GroceryCategory[] = [
-  { id: 'masalas', name: 'Masalas & Spices', emoji: '🌶️' },
-  { id: 'dairy', name: 'Milk Products', emoji: '🥛' },
-  { id: 'millets', name: 'Millets & Grains', emoji: '🌾' },
-  { id: 'rice', name: 'Rice & Staples', emoji: '🍚' },
-  { id: 'vegetables', name: 'Vegetables', emoji: '🥕' },
-  { id: 'fruits', name: 'Fruits', emoji: '🍎' },
-];
-
 export const groceryItems: GroceryItemData[] = [
   { id: 'g1', name: 'Basmati Rice', quantity: 2, unit: 'kg', status: 'available', category: 'rice' },
   { id: 'g2', name: 'Toor Dal', quantity: 0.5, unit: 'kg', status: 'low', category: 'rice' },

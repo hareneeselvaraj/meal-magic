@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import {
   groceryItems as initialItems,
   groceryCategories as initialCategories,
@@ -7,6 +7,16 @@ import {
 } from '@/data/mockData';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
+
+export interface IngredientCheck {
+  ingredientName: string;
+  recipeName: string;
+  requiredQty: string;
+  requiredUnit: string;
+  availableQty: number;
+  availableUnit: string;
+  status: 'available' | 'low' | 'missing';
+}
 
 interface GroceryContextValue {
   // Items CRUD
@@ -20,6 +30,53 @@ interface GroceryContextValue {
   addCategory: (category: Omit<GroceryCategory, 'id'>) => void;
   updateCategory: (id: string, patch: Partial<Omit<GroceryCategory, 'id'>>) => void;
   deleteCategory: (id: string) => void;
+
+  // Bulk operations
+  bulkAddItems: (items: Omit<GroceryItemData, 'id'>[]) => void;
+
+  // Grocery Intelligence
+  deductIngredients: (ingredients: { name: string; quantity: string; unit: string }[]) => void;
+  checkIngredientAvailability: (
+    recipeName: string,
+    ingredients: { name: string; quantity: string; unit: string }[]
+  ) => IngredientCheck[];
+}
+
+// ─── Fuzzy name matching ─────────────────────────────────────────────────────
+function normalizeIngredientName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/\s*\(.*?\)\s*/g, '') // remove parenthetical (sliced), (chopped)
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function findMatchingGroceryItem(items: GroceryItemData[], ingredientName: string): GroceryItemData | null {
+  const normalized = normalizeIngredientName(ingredientName);
+
+  // Exact match
+  let match = items.find(it => normalizeIngredientName(it.name) === normalized);
+  if (match) return match;
+
+  // Partial match — ingredient contains grocery name or vice versa
+  match = items.find(it => {
+    const gName = normalizeIngredientName(it.name);
+    return normalized.includes(gName) || gName.includes(normalized);
+  });
+  if (match) return match;
+
+  // Word overlap match
+  const words = normalized.split(' ').filter(w => w.length > 2);
+  match = items.find(it => {
+    const gName = normalizeIngredientName(it.name);
+    return words.some(w => gName.includes(w));
+  });
+  return match || null;
+}
+
+function parseQuantity(qty: string): number {
+  const num = parseFloat(qty);
+  return isNaN(num) ? 0 : num;
 }
 
 // ─── Context ─────────────────────────────────────────────────────────────────
@@ -75,16 +132,87 @@ export const GroceryProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteCategory = (id: string) => {
-    // Also remove all items belonging to this category
     setItems((prev) => prev.filter((item) => item.category !== id));
     setCategories((prev) => prev.filter((cat) => cat.id !== id));
   };
+
+  // ── Bulk add ─────────────────────────────────────────────────────────────
+  const bulkAddItems = (newItems: Omit<GroceryItemData, 'id'>[]) => {
+    setItems((prev) => [
+      ...newItems.map((item, i) => ({
+        ...item,
+        id: `g${Date.now()}_${i}`,
+        status: deriveStatus(item.quantity),
+      })),
+      ...prev,
+    ]);
+  };
+
+  // ── Grocery Intelligence ─────────────────────────────────────────────────
+
+  /** Deduct recipe ingredients from grocery inventory */
+  const deductIngredients = useCallback((ingredients: { name: string; quantity: string; unit: string }[]) => {
+    setItems(prev => {
+      const updated = [...prev];
+      for (const ing of ingredients) {
+        const match = findMatchingGroceryItem(updated, ing.name);
+        if (match) {
+          const idx = updated.findIndex(it => it.id === match.id);
+          if (idx !== -1) {
+            const deductAmt = parseQuantity(ing.quantity);
+            const newQty = Math.max(0, updated[idx].quantity - deductAmt);
+            updated[idx] = {
+              ...updated[idx],
+              quantity: newQty,
+              status: newQty <= 0 ? 'missing' : newQty <= 0.5 ? 'low' : 'available',
+            };
+          }
+        }
+      }
+      return updated;
+    });
+  }, []);
+
+  /** Check ingredient availability against grocery inventory */
+  const checkIngredientAvailability = useCallback((
+    recipeName: string,
+    ingredients: { name: string; quantity: string; unit: string }[]
+  ): IngredientCheck[] => {
+    const alerts: IngredientCheck[] = [];
+    for (const ing of ingredients) {
+      const match = findMatchingGroceryItem(items, ing.name);
+      if (!match) {
+        alerts.push({
+          ingredientName: ing.name,
+          recipeName,
+          requiredQty: ing.quantity,
+          requiredUnit: ing.unit,
+          availableQty: 0,
+          availableUnit: ing.unit,
+          status: 'missing',
+        });
+      } else if (match.status === 'low' || match.status === 'missing') {
+        alerts.push({
+          ingredientName: ing.name,
+          recipeName,
+          requiredQty: ing.quantity,
+          requiredUnit: ing.unit,
+          availableQty: match.quantity,
+          availableUnit: match.unit,
+          status: match.status === 'missing' ? 'missing' : 'low',
+        });
+      }
+    }
+    return alerts;
+  }, [items]);
 
   return (
     <GroceryContext.Provider
       value={{
         items, addItem, updateItem, deleteItem,
         categories, addCategory, updateCategory, deleteCategory,
+        bulkAddItems,
+        deductIngredients, checkIngredientAvailability,
       }}
     >
       {children}
