@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase/firestore";
+
 
 // ═══════════════════════════════════════════════════════
 //  NUTRIMOM PWA — Complete Type System
@@ -19,8 +19,8 @@ export interface UserProfile {
   deficiencies: string[];  // ['iron', 'vitamin_d', 'ferritin', 'b12']
   preferredLanguage: Language;
   avatarUrl?: string;
-  createdAt: Timestamp | Date;
-  updatedAt: Timestamp | Date;
+  createdAt: Timestamp |Date | number;
+  updatedAt: Timestamp |Date | number;
 }
 
 // ── Cuisine Management ────────────────────────────────────
@@ -32,8 +32,8 @@ export interface Cuisine {
   isDefault: boolean;
   isActive: boolean;
   createdBy: string;  // userId or 'system'
-  createdAt: Timestamp | Date;
-  updatedAt: Timestamp | Date;
+  createdAt: Timestamp |Date | number;
+  updatedAt: Timestamp |Date | number;
 }
 
 // ── Recipe System ─────────────────────────────────────────
@@ -72,7 +72,7 @@ export interface VideoLink {
   originalLanguage: Language;
   transcriptEnglish: string;
   transcriptTamil: string;
-  addedAt: Timestamp | Date;
+  addedAt: Timestamp |Date | number;
 }
 
 export interface Recipe {
@@ -94,8 +94,8 @@ export interface Recipe {
   imageUrl: string | null;
   createdBy: string;
   isPublic: boolean;
-  createdAt: Timestamp | Date;
-  updatedAt: Timestamp | Date;
+  createdAt: Timestamp |Date | number;
+  updatedAt: Timestamp |Date | number;
 }
 
 // ── Meal Planning ─────────────────────────────────────────
@@ -114,7 +114,7 @@ export interface MealPlan {
   meals: MealPlanMeals;
   completedMeals: MealSlot[];
   notes: string | null;
-  createdAt: Timestamp | Date;
+  createdAt: Timestamp |Date | number;
 }
 
 // ── Meal Slot Configuration ─────────────────────────────

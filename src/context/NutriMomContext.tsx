@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import type { Cuisine, Recipe, MealPlan, MealSlot, UserProfile, MealPlanMeals } from '@/lib/types';
 import { seedRecipes, defaultCuisines } from '@/data/seedData';
 
@@ -62,11 +62,25 @@ const initialRecipes: Recipe[] = seedRecipes.map(r => ({
 const NutriMomContext = createContext<NutriMomContextValue | null>(null);
 
 // ─── Provider ────────────────────────────────────────────
+// ── LocalStorage helpers ─────────────────────────────────
+function loadJSON<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch { return fallback; }
+}
+
 export const NutriMomProvider = ({ children }: { children: ReactNode }) => {
-  const [activeProfile, setActiveProfile] = useState<UserProfile>(defaultProfile);
-  const [cuisines, setCuisines] = useState<Cuisine[]>(initialCuisines);
-  const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
-  const [mealPlans, setMealPlans] = useState<Record<string, MealPlan>>({});
+  const [activeProfile, setActiveProfile] = useState<UserProfile>(() => loadJSON('nm_profile', defaultProfile));
+  const [cuisines, setCuisines] = useState<Cuisine[]>(() => loadJSON('nm_cuisines', initialCuisines));
+  const [recipes, setRecipes] = useState<Recipe[]>(() => loadJSON('nm_recipes', initialRecipes));
+  const [mealPlans, setMealPlans] = useState<Record<string, MealPlan>>(() => loadJSON('nm_mealPlans', {}));
+
+  // ── Auto-persist on change ──
+  useEffect(() => { localStorage.setItem('nm_profile', JSON.stringify(activeProfile)); }, [activeProfile]);
+  useEffect(() => { localStorage.setItem('nm_cuisines', JSON.stringify(cuisines)); }, [cuisines]);
+  useEffect(() => { localStorage.setItem('nm_recipes', JSON.stringify(recipes)); }, [recipes]);
+  useEffect(() => { localStorage.setItem('nm_mealPlans', JSON.stringify(mealPlans)); }, [mealPlans]);
 
   // ── Cuisine Operations ────────────────────────────────
   const addCuisine = useCallback((cuisine: Omit<Cuisine, 'id' | 'createdAt' | 'updatedAt'>) => {

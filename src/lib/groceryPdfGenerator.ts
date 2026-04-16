@@ -94,3 +94,75 @@ export function downloadGroceryListPDF(alerts: IngredientCheck[]) {
     };
   }
 }
+
+export function downloadSmartShoppingListPDF(items: { name: string; displayQty: string; forRecipes: string[] }[]) {
+  const itemsHTML = items.map(item => `
+    <li style="display: flex; flex-direction: column; padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+        <div style="font-weight: 600; color: #1f2937; text-transform: capitalize;">${item.name}</div>
+        <div style="background-color: #d1fae5; color: #047857; padding: 2px 8px; border-radius: 4px; font-size: 13px; font-weight: 700;">
+          ${item.displayQty}
+        </div>
+      </div>
+      <div>
+        <span style="font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase;">For:</span>
+        ${item.forRecipes.map(r => `
+          <span style="font-size: 11px; padding: 2px 6px; border: 1px solid #e5e7eb; border-radius: 4px; color: #4b5563; margin-left: 4px; display: inline-block; margin-bottom: 2px;">${r}</span>
+        `).join('')}
+      </div>
+    </li>
+  `).join('');
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Shopping List — NutriMom</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #fff;
+    }
+    @media print {
+      body { padding: 0; margin: 0; max-width: none; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div style="text-align: center; margin-bottom: 32px;">
+    <h1 style="font-size: 28px; font-weight: 700; color: #064e3b; margin-bottom: 8px;">Smart Shopping List</h1>
+    <p style="color: #6b7280;">NutriMom • ${new Date().toLocaleDateString()}</p>
+    <p style="font-size: 13px; color: #9ca3af; margin-top: 4px;">What you need for your planned meals minus what you already have.</p>
+  </div>
+
+  <div style="background: #f9fafb; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb;">
+    ${items.length === 0 
+      ? '<div style="text-align: center; color: #6b7280; padding: 40px 0; font-weight: 600;">You are all set! No groceries needed.</div>'
+      : `<ul style="list-style: none;">${itemsHTML}</ul>`
+    }
+  </div>
+
+  <div class="no-print" style="margin-top: 32px; text-align: center;">
+    <button onclick="window.print()" style="background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);">
+      Save as PDF / Print
+    </button>
+  </div>
+</body>
+</html>`;
+
+  const printWindow = window.open('', '_blank');
+  if (printWindow) {
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      setTimeout(() => printWindow.print(), 500);
+    };
+  }
+}

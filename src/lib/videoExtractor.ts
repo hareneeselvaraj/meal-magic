@@ -218,18 +218,43 @@ const RECIPE_TEMPLATES: Record<string, {
 };
 
 /**
- * Extract video ID from YouTube URL
+ * Parse any video URL into platform + id + canonical URL
  */
-function extractVideoId(url: string): string | null {
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/)([\w-]{11})/,
-    /youtube\.com\/embed\/([\w-]{11})/,
-  ];
-  for (const p of patterns) {
+export type VideoPlatform = 'youtube' | 'instagram';
+export interface ParsedVideo {
+  platform: VideoPlatform;
+  id: string;
+  canonicalUrl: string;
+}
+
+const YOUTUBE_PATTERNS = [
+  /(?:youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/)([\w-]{11})/,
+  /youtube\.com\/embed\/([\w-]{11})/,
+];
+const INSTAGRAM_PATTERNS = [
+  /instagram\.com\/reel\/([A-Za-z0-9_-]+)/,
+  /instagram\.com\/p\/([A-Za-z0-9_-]+)/,
+  /instagram\.com\/tv\/([A-Za-z0-9_-]+)/,
+];
+
+export function parseVideoUrl(url: string): ParsedVideo | null {
+  for (const p of YOUTUBE_PATTERNS) {
     const m = url.match(p);
-    if (m) return m[1];
+    if (m) return { platform: 'youtube', id: m[1], canonicalUrl: `https://www.youtube.com/watch?v=${m[1]}` };
+  }
+  for (const p of INSTAGRAM_PATTERNS) {
+    const m = url.match(p);
+    if (m) return { platform: 'instagram', id: m[1], canonicalUrl: `https://www.instagram.com/reel/${m[1]}/` };
   }
   return null;
+}
+
+/**
+ * Extract video ID from YouTube URL (backward compat)
+ */
+function extractVideoId(url: string): string | null {
+  const parsed = parseVideoUrl(url);
+  return parsed?.platform === 'youtube' ? parsed.id : null;
 }
 
 /**

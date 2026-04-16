@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { readAll, writeAll } from '@/lib/db';
 import {
   groceryItems as initialItems,
   groceryCategories as initialCategories,
@@ -86,8 +87,33 @@ const GroceryContext = createContext<GroceryContextValue | null>(null);
 // ─── Provider ────────────────────────────────────────────────────────────────
 
 export const GroceryProvider = ({ children }: { children: ReactNode }) => {
-  const [items, setItems] = useState<GroceryItemData[]>(initialItems);
-  const [categories, setCategories] = useState<GroceryCategory[]>(initialCategories);
+  const [items, setItems] = useState<GroceryItemData[]>([]);
+  const [categories, setCategories] = useState<GroceryCategory[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const hydrated = useRef(false);
+
+  // ── Hydrate from IndexedDB on mount ──
+  useEffect(() => {
+    (async () => {
+      try {
+        const [savedItems, savedCats] = await Promise.all([
+          readAll('groceryItems'),
+          readAll('groceryCategories'),
+        ]);
+        setItems(savedItems.length ? savedItems : initialItems);
+        setCategories(savedCats.length ? savedCats : initialCategories);
+      } catch {
+        setItems(initialItems);
+        setCategories(initialCategories);
+      }
+      hydrated.current = true;
+      setLoaded(true);
+    })();
+  }, []);
+
+  // ── Auto-persist on change ──
+  useEffect(() => { if (hydrated.current) writeAll('groceryItems', items); }, [items]);
+  useEffect(() => { if (hydrated.current) writeAll('groceryCategories', categories); }, [categories]);
 
   const deriveStatus = (qty: number): GroceryItemData['status'] => {
     if (qty <= 0) return 'missing';
@@ -215,7 +241,7 @@ export const GroceryProvider = ({ children }: { children: ReactNode }) => {
         deductIngredients, checkIngredientAvailability,
       }}
     >
-      {children}
+      {loaded ? children : null}
     </GroceryContext.Provider>
   );
 };

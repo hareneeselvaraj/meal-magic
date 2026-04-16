@@ -6,9 +6,10 @@ import { MEAL_SLOT_CONFIG } from '@/lib/types';
 import type { MealSlot } from '@/lib/types';
 import GlassCard from '@/components/GlassCard';
 import { cn } from '@/lib/utils';
-import { Clock, Check, ChevronRight, ChevronDown, Sparkles, Heart, Sun, Moon, Leaf, User, Bell, Download, X, Link } from 'lucide-react';
+import { Clock, Check, ChevronRight, ChevronDown, Sparkles, Heart, Sun, Moon, Leaf, User, Bell, Download, X, Link, AlertTriangle, Utensils } from 'lucide-react';
 import { downloadGroceryListPDF } from '@/lib/groceryPdfGenerator';
 import { downloadRecipePDF } from '@/lib/recipePdfGenerator';
+import { getLowStockItems, getCookableRecipes } from '@/lib/shoppingList';
 
 interface HomeProps {
   onOpenProfile?: () => void;
@@ -21,6 +22,7 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
 
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showLowStockModal, setShowLowStockModal] = useState(false);
   const [expandedSlots, setExpandedSlots] = useState<Record<string, boolean>>({});
   const [selectionModalSlot, setSelectionModalSlot] = useState<MealSlot | null>(null);
   useEffect(() => {
@@ -40,6 +42,11 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
 
   const todayPlan = getMealPlan(todayStr);
   const completedCount = todayPlan?.completedMeals.length || 0;
+
+  // Grocery Dashboard Widgets
+  const { items: inventory } = useGrocery();
+  const lowStockItems = useMemo(() => getLowStockItems(inventory), [inventory]);
+  const cookableRecipes = useMemo(() => getCookableRecipes(recipes, inventory).slice(0, 3), [recipes, inventory]);
 
   const dailyTip = useMemo(() => {
     const relevant = healthTips.filter(t =>
@@ -399,6 +406,49 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
         </div>
       </div>
 
+      {/* Dashboard Widgets */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* Low Stock Alert */}
+        <GlassCard onClick={() => setShowLowStockModal(true)} className="p-3 bg-gradient-to-br from-rose-50/50 to-orange-50/50 border-rose-200/40 cursor-pointer hover:shadow-md transition-all active:scale-95">
+          <h3 className="text-xs font-bold text-gray-800 flex items-center gap-1.5 mb-2">
+            <AlertTriangle size={12} className="text-rose-500" /> Low Stock
+          </h3>
+          {lowStockItems.length === 0 ? (
+            <p className="text-[10px] text-gray-500">Pantry is fully stocked!</p>
+          ) : (
+            <div className="space-y-1.5 text-[10px]">
+              {lowStockItems.slice(0, 3).map(item => (
+                <div key={item.id} className="flex justify-between items-center text-gray-700 bg-white/60 px-1.5 py-1 rounded border border-rose-100">
+                  <span className="truncate max-w-[80px]">{item.name}</span>
+                  <span className="font-semibold text-rose-600">{item.quantity}{item.unit}</span>
+                </div>
+              ))}
+              {lowStockItems.length > 3 && (
+                <div className="text-center text-gray-400 font-medium pt-1">+{lowStockItems.length - 3} more</div>
+              )}
+            </div>
+          )}
+        </GlassCard>
+
+        {/* Cookable Right Now */}
+        <GlassCard className="p-3 bg-gradient-to-br from-amber-50/50 to-yellow-50/50 border-amber-200/40">
+          <h3 className="text-xs font-bold text-gray-800 flex items-center gap-1.5 mb-2">
+            <Utensils size={12} className="text-amber-500" /> Cookable Now
+          </h3>
+          {cookableRecipes.length === 0 ? (
+            <p className="text-[10px] text-gray-500">Need groceries to cook.</p>
+          ) : (
+            <div className="space-y-1.5 text-[10px]">
+              {cookableRecipes.map(recipe => (
+                <div key={recipe.id} className="text-gray-700 bg-white/60 px-1.5 py-1 rounded truncate border border-amber-100 font-medium">
+                  {recipe.name}
+                </div>
+              ))}
+            </div>
+          )}
+        </GlassCard>
+      </div>
+
       {/* Nutrition Deficiency Badges */}
       {activeProfile.deficiencies.length > 0 && (
         <GlassCard className="p-4">
@@ -462,6 +512,57 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
                   ))
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Expanded Low Stock Modal */}
+      {showLowStockModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={() => setShowLowStockModal(false)}>
+          <div className="w-full max-h-[85vh] max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
+            <div className="px-5 py-4 border-b border-rose-100 flex items-center justify-between bg-rose-50/50 shrink-0">
+              <h3 className="font-bold text-rose-800 text-lg flex items-center gap-2">
+                <AlertTriangle size={18} className="text-rose-500" /> Low Stock Items
+              </h3>
+              <button onClick={() => setShowLowStockModal(false)} className="p-2 -mr-2 text-rose-400 hover:text-rose-700 bg-white/50 hover:bg-white rounded-full transition-colors touch-manipulation">
+                <X size={18} strokeWidth={2.5} />
+              </button>
+            </div>
+            
+            <div className="overflow-y-auto p-5 flex-1 bg-white">
+              {lowStockItems.length === 0 ? (
+                <div className="text-center py-10">
+                  <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Check size={32} />
+                  </div>
+                  <p className="text-gray-800 font-bold">Pantry is fully stocked!</p>
+                  <p className="text-sm text-gray-500 mt-1">You have no low or missing items.</p>
+                </div>
+              ) : (
+                <div className="space-y-2.5 pb-4">
+                  {lowStockItems.map(item => (
+                    <div key={item.id} className="flex justify-between items-center bg-rose-50/30 p-3 rounded-2xl border border-rose-100/60 shadow-sm">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-gray-800 text-sm truncate max-w-[200px]">{item.name}</span>
+                        <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+                          {item.category.replace(/_/g, ' ')}
+                        </span>
+                      </div>
+                      <div className="flex gap-2 items-center">
+                        <span className={cn(
+                          "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider",
+                          item.status === 'missing' ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"
+                        )}>
+                          {item.status}
+                        </span>
+                        <span className="font-bold text-rose-600 bg-white px-2 py-1 rounded shadow-sm text-xs border border-rose-50">
+                          {item.quantity}{item.unit}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

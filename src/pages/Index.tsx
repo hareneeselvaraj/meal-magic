@@ -8,6 +8,8 @@ import GroceryInventory from './GroceryInventory';
 import UploadInvoice from './UploadInvoice';
 import RecipeForm from './RecipeForm';
 import Profile from './Profile';
+import OfflineBanner from '@/components/OfflineBanner';
+import InstallPrompt from '@/components/InstallPrompt';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<TabId>('home');
@@ -75,10 +77,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative">
+      <OfflineBanner />
       <FloatingBackground />
       <main className="max-w-lg mx-auto px-4 pt-6 pb-24 animate-fade-in">
         {renderScreen()}
       </main>
+      <InstallPrompt />
       <BottomNav
         active={activeTab}
         onTabChange={(tab) => { setShowRecipeForm(false); setShowScan(false); setShowProfile(false); setActiveTab(tab); }}
