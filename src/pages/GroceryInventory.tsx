@@ -21,9 +21,7 @@ import Tesseract from 'tesseract.js';
 import { buildShoppingList } from '@/lib/shoppingList';
 import { downloadSmartShoppingListPDF } from '@/lib/groceryPdfGenerator';
 
-interface GroceryInventoryProps {
-  triggerAddItem?: number;
-}
+
 
 const ICON_OPTIONS = [
   '/categories/veg.jpg',
@@ -46,7 +44,7 @@ const statusBorderColor: Record<string, string> = {
   missing: 'border-red-200/60',
 };
 
-const GroceryInventory = ({ triggerAddItem }: GroceryInventoryProps) => {
+const GroceryInventory = () => {
   const { items, addItem, updateItem, deleteItem, categories, addCategory, updateCategory, deleteCategory, bulkAddItems } = useGrocery();
   const { mealPlans, recipes } = useNutriMom();
 
@@ -97,7 +95,7 @@ const GroceryInventory = ({ triggerAddItem }: GroceryInventoryProps) => {
 
   const shoppingList = useMemo(() => buildShoppingList(plannedRecipes, items), [plannedRecipes, items]);
 
-  useEffect(() => { if (triggerAddItem) { setShowAdd(true); setNewCategory(activeCategory || categories[0]?.id || ''); } }, [triggerAddItem]);
+
 
   const categoryItems = activeCategory
     ? items.filter((i) => i.category === activeCategory && i.name.toLowerCase().includes(search.toLowerCase()))
@@ -263,23 +261,23 @@ const GroceryInventory = ({ triggerAddItem }: GroceryInventoryProps) => {
             const unmappedCategories = categories.filter(c => !mappedKeys.includes(c.id));
 
             const sectionConfig = [
-              { title: 'Fresh Items', emoji: '\uD83E\uDD6C', gradient: 'from-green-50 to-emerald-50', accent: 'bg-green-500', cats: categories.filter(c => ['vegetables', 'fruits', 'dairy', 'meat'].includes(c.id)) },
-              { title: 'Grocery & Kitchen', emoji: '\uD83C\uDF5A', gradient: 'from-amber-50 to-orange-50', accent: 'bg-amber-500', cats: categories.filter(c => ['rice', 'masalas', 'oils', 'cereals', 'millets'].includes(c.id)) },
-              { title: 'Snacks & Drinks', emoji: '\uD83C\uDF7F', gradient: 'from-rose-50 to-pink-50', accent: 'bg-rose-500', cats: categories.filter(c => snacksKeys.includes(c.id)) },
+              { title: 'Fresh Items', emoji: '🥬', gradient: 'from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30', accent: 'bg-green-500', cats: categories.filter(c => ['vegetables', 'fruits', 'dairy', 'meat'].includes(c.id)) },
+              { title: 'Grocery & Kitchen', emoji: '🍚', gradient: 'from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30', accent: 'bg-amber-500', cats: categories.filter(c => ['rice', 'masalas', 'oils', 'cereals', 'millets'].includes(c.id)) },
+              { title: 'Snacks & Drinks', emoji: '🍿', gradient: 'from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30', accent: 'bg-rose-500', cats: categories.filter(c => snacksKeys.includes(c.id)) },
             ];
 
             if (unmappedCategories.length > 0) {
-              sectionConfig.push({ title: 'More Categories', emoji: '\u2728', gradient: 'from-purple-50 to-indigo-50', accent: 'bg-purple-500', cats: unmappedCategories });
+              sectionConfig.push({ title: 'More Categories', emoji: '✨', gradient: 'from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30', accent: 'bg-purple-500', cats: unmappedCategories });
             }
 
             return sectionConfig.map((section) => (
               section.cats.length > 0 && (
-                <div key={section.title} className={`rounded-2xl bg-gradient-to-br ${section.gradient} p-4 shadow-sm border border-white/60`}>
+                <div key={section.title} className={`rounded-2xl bg-gradient-to-br ${section.gradient} p-4 shadow-sm border border-white/60 dark:border-slate-800`}>
                   <div className="flex items-center gap-2 mb-3">
                     <div className={`w-1 h-5 ${section.accent} rounded-full`} />
                     <span className="text-sm">{section.emoji}</span>
-                    <h2 className="text-[15px] font-extrabold text-gray-800 tracking-tight">{section.title}</h2>
-                    <span className="ml-auto text-[10px] font-semibold text-gray-400">{section.cats.length} items</span>
+                    <h2 className="text-[15px] font-extrabold text-gray-800 dark:text-slate-200 tracking-tight">{section.title}</h2>
+                    <span className="ml-auto text-[10px] font-semibold text-gray-400 dark:text-slate-500">{section.cats.length} items</span>
                   </div>
 
                   <div className="grid grid-cols-4 gap-3">
@@ -300,7 +298,7 @@ const GroceryInventory = ({ triggerAddItem }: GroceryInventoryProps) => {
                           onClick={() => { setActiveCategory(cat.id); setSearch(''); }}
                           className="group flex flex-col items-center cursor-pointer active:scale-[0.92] transition-all duration-200"
                         >
-                          <div className="w-full aspect-square bg-white rounded-2xl flex items-center justify-center relative overflow-hidden transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.06)] group-hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] group-hover:-translate-y-0.5">
+                          <div className="w-full aspect-square bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center relative overflow-hidden transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)] group-hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] group-hover:-translate-y-0.5">
                             {catStatus !== 'available' && (
                               <div className="absolute top-1 right-1 scale-75 origin-top-right z-20">
                                 <StatusBadge status={catStatus} />
@@ -313,7 +311,7 @@ const GroceryInventory = ({ triggerAddItem }: GroceryInventoryProps) => {
                             )}
                           </div>
                           <div className="w-full flex-1 pt-1.5 px-0.5">
-                            <h3 className="text-[11px] font-bold text-gray-700 text-center leading-[1.2] break-words">{cat.name}</h3>
+                            <h3 className="text-[11px] font-bold text-gray-700 dark:text-slate-300 text-center leading-[1.2] break-words">{cat.name}</h3>
                           </div>
                         </div>
                       );
@@ -327,10 +325,10 @@ const GroceryInventory = ({ triggerAddItem }: GroceryInventoryProps) => {
           <div className="flex justify-center mt-3">
             <button
               onClick={() => setShowAddCat(true)}
-              className="rounded-2xl border-[1.5px] border-dashed border-gray-300 bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center gap-1.5 hover:bg-emerald-50 hover:border-emerald-400 hover:text-emerald-700 transition-all w-[110px] h-[75px] active:scale-95 duration-200 shadow-sm hover:shadow-md"
+              className="rounded-2xl border-[1.5px] border-dashed border-gray-300 dark:border-slate-700 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center gap-1.5 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 hover:border-emerald-400 dark:hover:border-emerald-700 hover:text-emerald-700 dark:hover:text-emerald-400 transition-all w-[110px] h-[75px] active:scale-95 duration-200 shadow-sm hover:shadow-md"
             >
-              <Plus size={18} className="text-gray-400" />
-              <span className="text-[10px] font-bold text-gray-500">Edit / Add</span>
+              <Plus size={18} className="text-gray-400 dark:text-slate-500" />
+              <span className="text-[10px] font-bold text-gray-500 dark:text-slate-500">Edit / Add</span>
             </button>
           </div>
         </div>
@@ -521,7 +519,7 @@ const GroceryInventory = ({ triggerAddItem }: GroceryInventoryProps) => {
                 <Input value={newQty} onChange={(e) => setNewQty(e.target.value)} placeholder="Qty" type="number" className="flex-1" />
                 <Input value={newUnit} onChange={(e) => setNewUnit(e.target.value)} placeholder="Unit" className="flex-1" />
               </div>
-              <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm">
+              <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200">
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
               <Button onClick={handleAddItem} disabled={!newName.trim()} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl">Add</Button>
@@ -538,7 +536,7 @@ const GroceryInventory = ({ triggerAddItem }: GroceryInventoryProps) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <button onClick={() => setActiveCategory(null)} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+        <button onClick={() => setActiveCategory(null)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1">
@@ -546,8 +544,8 @@ const GroceryInventory = ({ triggerAddItem }: GroceryInventoryProps) => {
           <p className="text-xs text-muted-foreground">{categoryItems.length} items</p>
         </div>
         <div className="flex gap-1">
-          <button onClick={() => activeCategoryData && openEditCategory(activeCategoryData)} className="p-2 rounded-lg hover:bg-gray-100"><Pencil size={16} /></button>
-          <button onClick={() => activeCategory && setDeleteCatId(activeCategory)} className="p-2 rounded-lg hover:bg-red-50 text-red-500"><Trash2 size={16} /></button>
+          <button onClick={() => activeCategoryData && openEditCategory(activeCategoryData)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800"><Pencil size={16} /></button>
+          <button onClick={() => activeCategory && setDeleteCatId(activeCategory)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-red-500"><Trash2 size={16} /></button>
         </div>
       </div>
 

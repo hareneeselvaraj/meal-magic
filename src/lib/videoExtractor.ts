@@ -1,12 +1,17 @@
 /**
- * YouTube Video Recipe Extractor
+ * Video Recipe Extractor (YouTube + Instagram)
  *
- * Strategy:
+ * YouTube Strategy:
  * 1. Get video title/metadata via oEmbed API (no CORS issues)
  * 2. Try to fetch YouTube page via Vite proxy to get captions
  * 3. If captions available → parse transcript into recipe
  * 4. If no captions → match video title against recipe template DB
- * 5. Pre-fill RecipeForm with extracted/matched data
+ *
+ * Instagram Strategy:
+ * 1. Fetch page metadata/description from the URL
+ * 2. Use Gemini AI to extract recipe from URL + description
+ * 3. Fallback to recipe template matching from description
+ * 4. Handles visual-only videos (ingredients shown on screen, no voiceover)
  */
 
 export interface ExtractedRecipe {
@@ -138,6 +143,36 @@ const RECIPE_TEMPLATES: Record<string, {
       { stepNumber: 3, text: 'Add tomatoes, turmeric, chili powder, and coriander powder. Cook until tomatoes are mushy and oil separates.' },
       { stepNumber: 4, text: 'Add chicken pieces and salt. Mix well and cook on medium heat for 10 minutes.' },
       { stepNumber: 5, text: 'Add water as needed, cover and cook until chicken is tender (about 20 minutes). Add garam masala, garnish with coriander leaves and serve.' },
+    ],
+  },
+  'chicken_masala': {
+    keywords: ['chicken masala', 'restaurant style chicken', 'chicken gravy masala', 'masala chicken'],
+    ingredients: [
+      { name: 'Chicken', quantity: '500', unit: 'gm' },
+      { name: 'Onions (sliced)', quantity: '3', unit: 'large' },
+      { name: 'Tomatoes', quantity: '3', unit: 'medium' },
+      { name: 'Ginger-Garlic Paste', quantity: '2', unit: 'tbsp' },
+      { name: 'Green Chilies', quantity: '3', unit: 'nos' },
+      { name: 'Yogurt / Curd', quantity: '3', unit: 'tbsp' },
+      { name: 'Kashmiri Red Chili Powder', quantity: '1.5', unit: 'tsp' },
+      { name: 'Turmeric Powder', quantity: '0.5', unit: 'tsp' },
+      { name: 'Coriander Powder', quantity: '1.5', unit: 'tsp' },
+      { name: 'Cumin Powder', quantity: '1', unit: 'tsp' },
+      { name: 'Garam Masala', quantity: '1', unit: 'tsp' },
+      { name: 'Oil', quantity: '4', unit: 'tbsp' },
+      { name: 'Curry Leaves', quantity: '10', unit: 'leaves' },
+      { name: 'Coriander Leaves (garnish)', quantity: 'as needed', unit: '' },
+      { name: 'Salt', quantity: 'to taste', unit: '' },
+    ],
+    steps: [
+      { stepNumber: 1, text: 'Marinate chicken with yogurt, turmeric, chili powder, and salt for 15-30 minutes.' },
+      { stepNumber: 2, text: 'Heat oil in a heavy-bottomed pan. Add sliced onions and cook until deep golden brown.' },
+      { stepNumber: 3, text: 'Add ginger-garlic paste and green chilies. Sauté until raw smell disappears.' },
+      { stepNumber: 4, text: 'Add chopped tomatoes and cook until mushy and oil separates.' },
+      { stepNumber: 5, text: 'Add coriander powder, cumin powder, and remaining chili powder. Cook spices for 2 minutes.' },
+      { stepNumber: 6, text: 'Add marinated chicken, mix well. Cook on high heat for 5 minutes, then reduce to medium.' },
+      { stepNumber: 7, text: 'Add water as needed, cover and cook for 15-20 minutes until chicken is tender and gravy thickens.' },
+      { stepNumber: 8, text: 'Add garam masala, curry leaves. Garnish with fresh coriander. Serve hot with naan or rice.' },
     ],
   },
   'sambar': {
@@ -400,15 +435,164 @@ function parseTranscript(transcript: string, description: string): {
 }
 
 /**
- * Main extraction function
+ * Extract recipe from an Instagram URL using Gemini AI
+ */
+async function extractFromInstagram(
+  url: string,
+  parsedVideo: ParsedVideo,
+  videoLanguage: string
+): Promise<{ success: boolean; recipe?: ExtractedRecipe; error?: string }> {
+  // 1. Get metadata via noembed (avoids CORS — same approach as YouTube)
+  // Instagram direct page fetch is always blocked by CORS in browser context
+  let description = '';
+  let title = '';
+  try {
+    const noembedUrl = `https://noembed.com/embed?url=${encodeURIComponent(parsedVideo.canonicalUrl)}`;
+    const resp = await fetch(noembedUrl, { signal: AbortSignal.timeout(5000) });
+    if (resp.ok) {
+      const data = await resp.json();
+      title = (data.title || '').trim();
+      // noembed may return author_name for Instagram
+      if (data.author_name && !title) title = data.author_name;
+    }
+  } catch { /* ignore */ }
+
+  // 2. Extract the reel ID to include in the prompt
+  const reelId = parsedVideo.id;
+
+  // 3. Call Gemini AI with all available context
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (apiKey) {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `I need to extract a recipe from this Instagram reel: ${parsedVideo.canonicalUrl}
+
+Reel ID: ${reelId}
+${title ? `Title/info: ${title}` : ''}
+
+This Instagram cooking video may show ingredients and measurements as on-screen text overlays (visual-only, no voiceover). Based on the URL, reel ID, and your knowledge base:
+
+1. Identify the recipe name
+2. List ALL ingredients with exact quantities and units  
+3. Write step-by-step cooking instructions
+4. Estimate prep time in minutes
+
+Return ONLY a raw JSON object (no markdown, no code fences):
+{"name":"Recipe Name","ingredients":[{"name":"Ingredient","quantity":"2","unit":"tbsp"}],"steps":[{"stepNumber":1,"text":"Step description"}],"prepTimeMinutes":30}`
+              }],
+            }],
+          }),
+        }
+      );
+      const data = await response.json();
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      if (rawText) {
+        // Strip markdown code fences if present
+        const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+        // Find first { to handle any prefix text
+        const jsonStart = cleaned.indexOf('{');
+        const jsonEnd = cleaned.lastIndexOf('}');
+        if (jsonStart !== -1 && jsonEnd !== -1) {
+          const parsed = JSON.parse(cleaned.substring(jsonStart, jsonEnd + 1));
+          if (parsed.name && (parsed.ingredients?.length > 0 || parsed.steps?.length > 0)) {
+            return {
+              success: true,
+              recipe: {
+                title: parsed.name,
+                titleTamil: '',
+                thumbnailUrl: '',
+                channelName: title || '',
+                ingredients: (parsed.ingredients || []).map((i: any) => ({
+                  name: String(i.name || '').trim(),
+                  quantity: String(i.quantity || ''),
+                  unit: String(i.unit || ''),
+                })),
+                steps: (parsed.steps || []).map((s: any, idx: number) => ({
+                  stepNumber: s.stepNumber || idx + 1,
+                  text: String(s.text || '').trim(),
+                })),
+                videoUrl: url,
+                platform: 'instagram',
+                language: videoLanguage,
+                rawTranscript: description,
+              },
+            };
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Gemini extraction failed for Instagram:', e);
+    }
+  }
+
+  // 3. Fallback: try template matching from description
+  const searchText = `${title} ${description}`;
+  const template = matchRecipeTemplate(searchText);
+  if (template) {
+    // Extract a clean recipe name from the description
+    let recipeName = 'Recipe from Instagram';
+    const namePatterns = [
+      /restaurant[- ]style\s+([\w\s]+?)(?:\s+in|\s+recipe|\.|!|$)/i,
+      /([\w\s]+?)(?:\s+recipe|\s+in just|\.|!|$)/i,
+    ];
+    for (const pattern of namePatterns) {
+      const match = description.match(pattern);
+      if (match && match[1].trim().length > 3) {
+        recipeName = match[1].trim().replace(/^you need to try this\s*/i, '').trim();
+        if (recipeName.length > 3) {
+          recipeName = recipeName.charAt(0).toUpperCase() + recipeName.slice(1);
+          break;
+        }
+      }
+    }
+
+    console.log(`Matched Instagram recipe template for: "${searchText.slice(0, 60)}..."`);
+    return {
+      success: true,
+      recipe: {
+        title: recipeName,
+        titleTamil: '',
+        thumbnailUrl: '',
+        channelName: title || '',
+        ingredients: [...template.ingredients],
+        steps: [...template.steps],
+        videoUrl: url,
+        platform: 'instagram',
+        language: videoLanguage,
+        rawTranscript: description,
+      },
+    };
+  }
+
+  return { success: false, error: 'Could not extract recipe from this Instagram video. You can add details manually.' };
+}
+
+/**
+ * Main extraction function — supports both YouTube and Instagram
  */
 export async function extractRecipeFromVideo(
   url: string,
   videoLanguage: string = 'ta'
 ): Promise<{ success: boolean; recipe?: ExtractedRecipe; error?: string }> {
   try {
-    const videoId = extractVideoId(url);
-    if (!videoId) return { success: false, error: 'Could not parse video ID from URL' };
+    // Detect platform
+    const parsedVideo = parseVideoUrl(url);
+    if (!parsedVideo) return { success: false, error: 'Could not parse video URL. Please check the link.' };
+
+    // ─── Instagram path ───
+    if (parsedVideo.platform === 'instagram') {
+      return extractFromInstagram(url, parsedVideo, videoLanguage);
+    }
+
+    // ─── YouTube path ───
+    const videoId = parsedVideo.id;
 
     // 1. Get metadata from oEmbed
     let title = '';
@@ -452,11 +636,9 @@ export async function extractRecipeFromVideo(
 
     // 5. Clean title — pick the most descriptive segment
     let cleanTitle = title;
-    // Split by | and pick the longest/most descriptive segment
     const titleParts = title.split('|').map(p => p.trim());
     if (titleParts.length > 1) {
-      // Pick the part that contains recipe-like words, otherwise the longest
-      const recipePart = titleParts.find(p => 
+      const recipePart = titleParts.find(p =>
         /biryani|biriyani|curry|masala|chicken|mutton|rice|dosa|idli|paneer|butter|sambar/i.test(p)
       );
       cleanTitle = recipePart || titleParts.reduce((a, b) => a.length > b.length ? a : b);

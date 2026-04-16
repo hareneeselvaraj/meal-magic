@@ -5,22 +5,20 @@
 // ═══════════════════════════════════════════════════════
 
 // ── User Profiles ────────────────────────────────────────
-export type ProfileType = 'pregnancy' | 'heart_health';
 export type Language = 'en' | 'ta';
 
 export interface UserProfile {
   id: string;
   email: string;
   displayName: string;
-  profileType: ProfileType;
   weight: number;       // kg
   height: number;       // cm
   age: number;
   deficiencies: string[];  // ['iron', 'vitamin_d', 'ferritin', 'b12']
   preferredLanguage: Language;
   avatarUrl?: string;
-  createdAt: Timestamp |Date | number;
-  updatedAt: Timestamp |Date | number;
+  createdAt: Date | number;
+  updatedAt: Date | number;
 }
 
 // ── Cuisine Management ────────────────────────────────────
@@ -32,8 +30,8 @@ export interface Cuisine {
   isDefault: boolean;
   isActive: boolean;
   createdBy: string;  // userId or 'system'
-  createdAt: Timestamp |Date | number;
-  updatedAt: Timestamp |Date | number;
+  createdAt: Date | number;
+  updatedAt: Date | number;
 }
 
 // ── Recipe System ─────────────────────────────────────────
@@ -72,7 +70,7 @@ export interface VideoLink {
   originalLanguage: Language;
   transcriptEnglish: string;
   transcriptTamil: string;
-  addedAt: Timestamp |Date | number;
+  addedAt: Date | number;
 }
 
 export interface Recipe {
@@ -94,8 +92,8 @@ export interface Recipe {
   imageUrl: string | null;
   createdBy: string;
   isPublic: boolean;
-  createdAt: Timestamp |Date | number;
-  updatedAt: Timestamp |Date | number;
+  createdAt: Date | number;
+  updatedAt: Date | number;
 }
 
 // ── Meal Planning ─────────────────────────────────────────
@@ -114,7 +112,7 @@ export interface MealPlan {
   meals: MealPlanMeals;
   completedMeals: MealSlot[];
   notes: string | null;
-  createdAt: Timestamp |Date | number;
+  createdAt: Date | number;
 }
 
 // ── Meal Slot Configuration ─────────────────────────────
@@ -139,7 +137,6 @@ export interface HealthTip {
   id: string;
   text: string;
   textTamil: string;
-  forProfiles: ProfileType[];
   forDeficiencies: string[];
   emoji: string;
 }
@@ -163,7 +160,7 @@ export interface GroceryCategory {
 // ── Legacy Firestore Types (used by services) ────────────
 export interface UserData {
   name: string;
-  createdAt: Timestamp;
+  createdAt: Date | number;
 }
 
 export interface GroceryItem {
@@ -173,7 +170,7 @@ export interface GroceryItem {
   quantity: number;
   unit: string;
   status: "available" | "low" | "out";
-  lastUpdated: Timestamp;
+  lastUpdated: Date | number;
 }
 
 export interface MealIngredient {
@@ -195,7 +192,7 @@ export interface Meal {
 
 export interface MealLog {
   id?: string;
-  date: Timestamp;
+  date: Date | number;
   meals: string[];
   ingredientsUsed: MealIngredient[];
 }
@@ -208,7 +205,7 @@ export interface PurchaseItem {
 
 export interface Purchase {
   id?: string;
-  date: Timestamp;
+  date: Date | number;
   source: "BB Now" | "Manual" | string;
   items: PurchaseItem[];
 }

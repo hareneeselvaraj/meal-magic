@@ -24,7 +24,7 @@ export default function InstallPrompt() {
         <Download className="text-white" size={20} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-gray-800">Install NutriMom</p>
+        <p className="text-sm font-bold text-gray-800">Install Meal Magic</p>
         <p className="text-[11px] text-gray-500">Add to home screen for offline use</p>
       </div>
       <button

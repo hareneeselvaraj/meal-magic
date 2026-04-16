@@ -149,23 +149,23 @@ const RecipeForm = ({ onClose, videoData }: RecipeFormProps) => {
     <div className="min-h-screen pb-20">
       {/* Header */}
       <div className="flex items-center gap-3 mb-5">
-        <button onClick={onClose} className="w-9 h-9 rounded-full bg-white/70 border border-white/40 flex items-center justify-center">
-          <ArrowLeft size={18} className="text-gray-600" />
+        <button onClick={onClose} className="w-9 h-9 rounded-full bg-white/70 dark:bg-slate-800/70 border border-white/40 dark:border-slate-700 flex items-center justify-center">
+          <ArrowLeft size={18} className="text-gray-600 dark:text-slate-400" />
         </button>
         <h1 className="text-xl font-bold text-foreground">New Recipe</h1>
       </div>
 
       {/* Video source banner */}
       {videoData && (
-        <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-red-50 to-rose-50 border border-red-200/50 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+        <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-950/30 dark:to-rose-950/30 border border-red-200/50 dark:border-red-900/50 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/50 flex items-center justify-center shrink-0">
             <Video size={18} className="text-red-500" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-red-700">Extracted from Video</p>
-            <p className="text-[10px] text-red-400 truncate">{extracted?.channelName || videoData.url}</p>
+            <p className="text-xs font-semibold text-red-700 dark:text-red-400">Extracted from Video</p>
+            <p className="text-[10px] text-red-400 dark:text-red-500 truncate">{extracted?.channelName || videoData.url}</p>
             {extracted && (
-              <p className="text-[10px] text-red-500 mt-0.5 font-medium">
+              <p className="text-[10px] text-red-500 dark:text-red-400 mt-0.5 font-medium">
                 {extracted.ingredients?.length || 0} ingredients • {extracted.steps?.length || 0} steps found
               </p>
             )}
@@ -182,10 +182,10 @@ const RecipeForm = ({ onClose, videoData }: RecipeFormProps) => {
           <div key={s} className="flex items-center gap-2 flex-1">
             <div className={cn(
               "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all",
-              i <= step ? "bg-emerald-500 text-white" : "bg-gray-200 text-gray-400"
+              i <= step ? "bg-emerald-500 text-white" : "bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-slate-500"
             )}>{i + 1}</div>
-            <span className={cn("text-[10px] font-medium hidden xs:block", i <= step ? "text-emerald-700" : "text-gray-400")}>{s}</span>
-            {i < STEPS.length - 1 && <div className={cn("flex-1 h-0.5 rounded", i < step ? "bg-emerald-400" : "bg-gray-200")} />}
+            <span className={cn("text-[10px] font-medium hidden xs:block", i <= step ? "text-emerald-700 dark:text-emerald-400" : "text-gray-400 dark:text-slate-500")}>{s}</span>
+            {i < STEPS.length - 1 && <div className={cn("flex-1 h-0.5 rounded", i < step ? "bg-emerald-400" : "bg-gray-200 dark:bg-slate-700")} />}
           </div>
         ))}
       </div>
@@ -195,54 +195,54 @@ const RecipeForm = ({ onClose, videoData }: RecipeFormProps) => {
         {step === 0 && (
           <>
             <div>
-              <label className="text-xs font-semibold text-gray-500 uppercase mb-1.5 block">Recipe Name *</label>
+              <label className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-1.5 block">Recipe Name *</label>
               <input type="text" value={name} onChange={e => setName(e.target.value)}
                 placeholder="e.g., Spinach Iron Smoothie"
-                className="w-full px-3 py-2.5 rounded-xl bg-white/70 border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+                className="w-full px-3 py-2.5 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-gray-200 dark:border-slate-700 text-sm text-gray-800 dark:text-slate-200 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:focus:ring-emerald-700" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-500 uppercase mb-1.5 block">Name in Tamil</label>
+              <label className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-1.5 block">Name in Tamil</label>
               <input type="text" value={nameTamil} onChange={e => setNameTamil(e.target.value)}
                 placeholder="தமிழ் பெயர்"
-                className="w-full px-3 py-2.5 rounded-xl bg-white/70 border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+                className="w-full px-3 py-2.5 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-gray-200 dark:border-slate-700 text-sm text-gray-800 dark:text-slate-200 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:focus:ring-emerald-700" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-500 uppercase mb-1.5 block">Cuisine *</label>
+              <label className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-1.5 block">Cuisine *</label>
               <div className="flex flex-wrap gap-2">
                 {activeCuisines.map(c => (
                   <button key={c.id} onClick={() => setCuisineId(c.id)}
                     className={cn("px-3 py-2 rounded-xl text-sm font-medium border transition-all",
-                      cuisineId === c.id ? "border-emerald-400 bg-emerald-50 text-emerald-700" : "border-gray-200 bg-white/70 text-gray-600"
+                      cuisineId === c.id ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400" : "border-gray-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 text-gray-600 dark:text-slate-400"
                     )}>{c.emoji} {c.name}</button>
                 ))}
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-500 uppercase mb-1.5 block">Meal Slot *</label>
+              <label className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-1.5 block">Meal Slot *</label>
               <div className="flex flex-wrap gap-2">
                 {MEAL_SLOT_CONFIG.map(s => (
                   <button key={s.key} onClick={() => setMealSlot(s.key)}
                     className={cn("px-3 py-2 rounded-xl text-xs font-medium border transition-all",
-                      mealSlot === s.key ? "border-teal-400 bg-teal-50 text-teal-700" : "border-gray-200 bg-white/70 text-gray-600"
+                      mealSlot === s.key ? "border-teal-400 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-400" : "border-gray-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 text-gray-600 dark:text-slate-400"
                     )}>{s.emoji} {s.label}</button>
                 ))}
               </div>
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="text-[10px] font-semibold text-gray-400 uppercase mb-1 block">Prep (min)</label>
+                <label className="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase mb-1 block">Prep (min)</label>
                 <input type="number" value={prepTime} onChange={e => setPrepTime(+e.target.value)}
-                  className="w-full px-2 py-2 rounded-xl bg-white/70 border border-gray-200 text-sm text-center focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+                  className="w-full px-2 py-2 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-gray-200 dark:border-slate-700 text-sm text-center text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:focus:ring-emerald-700" />
               </div>
               <div>
-                <label className="text-[10px] font-semibold text-gray-400 uppercase mb-1 block">Cook (min)</label>
+                <label className="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase mb-1 block">Cook (min)</label>
                 <input type="number" value={cookTime} onChange={e => setCookTime(+e.target.value)}
-                  className="w-full px-2 py-2 rounded-xl bg-white/70 border border-gray-200 text-sm text-center focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+                  className="w-full px-2 py-2 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-gray-200 dark:border-slate-700 text-sm text-center text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:focus:ring-emerald-700" />
               </div>
               <div>
-                <label className="text-[10px] font-semibold text-gray-400 uppercase mb-1 block">Servings</label>
+                <label className="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase mb-1 block">Servings</label>
                 <input type="number" value={servings} onChange={e => setServings(+e.target.value)}
-                  className="w-full px-2 py-2 rounded-xl bg-white/70 border border-gray-200 text-sm text-center focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+                  className="w-full px-2 py-2 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-gray-200 dark:border-slate-700 text-sm text-center text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:focus:ring-emerald-700" />
               </div>
             </div>
           </>
@@ -250,25 +250,25 @@ const RecipeForm = ({ onClose, videoData }: RecipeFormProps) => {
 
         {step === 1 && (
           <>
-            <h3 className="text-sm font-bold text-gray-700">Ingredients</h3>
+            <h3 className="text-sm font-bold text-gray-700 dark:text-slate-300">Ingredients</h3>
             {ingredients.map((ing, i) => (
               <div key={i} className="flex gap-2 items-start">
                 <div className="flex-1 grid grid-cols-3 gap-2">
                   <input type="text" value={ing.name} onChange={e => updateIngredient(i, 'name', e.target.value)}
-                    placeholder="Name" className="col-span-2 px-2 py-2 rounded-xl bg-white/70 border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+                    placeholder="Name" className="col-span-2 px-2 py-2 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-gray-200 dark:border-slate-700 text-xs text-gray-800 dark:text-slate-200 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:focus:ring-emerald-700" />
                   <div className="flex gap-1">
                     <input type="text" value={ing.quantity} onChange={e => updateIngredient(i, 'quantity', e.target.value)}
-                      placeholder="Qty" className="w-1/2 px-2 py-2 rounded-xl bg-white/70 border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+                      placeholder="Qty" className="w-1/2 px-2 py-2 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-gray-200 dark:border-slate-700 text-xs text-gray-800 dark:text-slate-200 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:focus:ring-emerald-700" />
                     <input type="text" value={ing.unit} onChange={e => updateIngredient(i, 'unit', e.target.value)}
-                      placeholder="Unit" className="w-1/2 px-2 py-2 rounded-xl bg-white/70 border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+                      placeholder="Unit" className="w-1/2 px-2 py-2 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-gray-200 dark:border-slate-700 text-xs text-gray-800 dark:text-slate-200 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:focus:ring-emerald-700" />
                   </div>
                 </div>
-                <button onClick={() => removeIngredient(i)} className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 mt-0.5">
-                  <Trash2 size={12} className="text-gray-400" />
+                <button onClick={() => removeIngredient(i)} className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-800 flex items-center justify-center shrink-0 mt-0.5">
+                  <Trash2 size={12} className="text-gray-400 dark:text-slate-500" />
                 </button>
               </div>
             ))}
-            <button onClick={addIngredient} className="w-full py-2.5 rounded-xl border-2 border-dashed border-gray-200 text-xs text-gray-400 font-medium hover:border-emerald-300 hover:text-emerald-600 transition-all flex items-center justify-center gap-1">
+            <button onClick={addIngredient} className="w-full py-2.5 rounded-xl border-2 border-dashed border-gray-200 dark:border-slate-700 text-xs text-gray-400 dark:text-slate-500 font-medium hover:border-emerald-300 dark:hover:border-emerald-700 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all flex items-center justify-center gap-1">
               <Plus size={14} /> Add Ingredient
             </button>
           </>
@@ -276,21 +276,21 @@ const RecipeForm = ({ onClose, videoData }: RecipeFormProps) => {
 
         {step === 2 && (
           <>
-            <h3 className="text-sm font-bold text-gray-700">Cooking Steps</h3>
+            <h3 className="text-sm font-bold text-gray-700 dark:text-slate-300">Cooking Steps</h3>
             {instructions.map((inst, i) => (
               <div key={i} className="flex gap-2 items-start">
-                <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-bold mt-2 shrink-0">{i + 1}</span>
+                <span className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 flex items-center justify-center text-[10px] font-bold mt-2 shrink-0">{i + 1}</span>
                 <div className="flex-1">
                   <textarea value={inst.text} onChange={e => updateInstruction(i, 'text', e.target.value)}
                     placeholder={`Step ${i + 1}...`} rows={2}
-                    className="w-full px-3 py-2 rounded-xl bg-white/70 border border-gray-200 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+                    className="w-full px-3 py-2 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-gray-200 dark:border-slate-700 text-xs text-gray-800 dark:text-slate-200 placeholder:text-gray-400 dark:placeholder:text-slate-500 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:focus:ring-emerald-700" />
                 </div>
-                <button onClick={() => removeInstruction(i)} className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 mt-1">
-                  <Trash2 size={12} className="text-gray-400" />
+                <button onClick={() => removeInstruction(i)} className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-800 flex items-center justify-center shrink-0 mt-1">
+                  <Trash2 size={12} className="text-gray-400 dark:text-slate-500" />
                 </button>
               </div>
             ))}
-            <button onClick={addInstruction} className="w-full py-2.5 rounded-xl border-2 border-dashed border-gray-200 text-xs text-gray-400 font-medium hover:border-emerald-300 hover:text-emerald-600 transition-all flex items-center justify-center gap-1">
+            <button onClick={addInstruction} className="w-full py-2.5 rounded-xl border-2 border-dashed border-gray-200 dark:border-slate-700 text-xs text-gray-400 dark:text-slate-500 font-medium hover:border-emerald-300 dark:hover:border-emerald-700 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all flex items-center justify-center gap-1">
               <Plus size={14} /> Add Step
             </button>
           </>
@@ -299,23 +299,23 @@ const RecipeForm = ({ onClose, videoData }: RecipeFormProps) => {
         {step === 3 && (
           <>
             <div>
-              <h3 className="text-sm font-bold text-gray-700 mb-2">Flavor Tags</h3>
+              <h3 className="text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Flavor Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {FLAVOR_TAGS.map(tag => (
                   <button key={tag} onClick={() => toggleTag(tag)}
                     className={cn("text-xs px-3 py-1.5 rounded-full font-medium border transition-all",
-                      tags.includes(tag) ? "bg-emerald-500 text-white border-emerald-500" : "bg-white/70 text-gray-500 border-gray-200"
+                      tags.includes(tag) ? "bg-emerald-500 text-white border-emerald-500" : "bg-white/70 dark:bg-slate-800/70 text-gray-500 dark:text-slate-400 border-gray-200 dark:border-slate-700"
                     )}>{tag}</button>
                 ))}
               </div>
             </div>
             <div>
-              <h3 className="text-sm font-bold text-gray-700 mb-2">Health Tags</h3>
+              <h3 className="text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Health Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {HEALTH_TAGS.map(ht => (
                   <button key={ht.id} onClick={() => toggleHealthTag(ht.id)}
                     className={cn("text-xs px-3 py-1.5 rounded-full font-medium border transition-all",
-                      healthTags.includes(ht.id) ? "bg-teal-500 text-white border-teal-500" : "bg-white/70 text-gray-500 border-gray-200"
+                      healthTags.includes(ht.id) ? "bg-teal-500 text-white border-teal-500" : "bg-white/70 dark:bg-slate-800/70 text-gray-500 dark:text-slate-400 border-gray-200 dark:border-slate-700"
                     )}>{ht.label}</button>
                 ))}
               </div>
@@ -390,14 +390,14 @@ const RecipeForm = ({ onClose, videoData }: RecipeFormProps) => {
         <div className="max-w-lg mx-auto flex gap-3">
           {step > 0 && (
             <button onClick={() => setStep(s => s - 1)}
-              className="flex-1 py-3 rounded-xl bg-white border border-gray-200 text-sm font-semibold text-gray-600 flex items-center justify-center gap-1">
+              className="flex-1 py-3 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm font-semibold text-gray-600 dark:text-slate-300 flex items-center justify-center gap-1">
               <ChevronLeft size={16} /> Back
             </button>
           )}
           {step < STEPS.length - 1 ? (
             <button onClick={() => setStep(s => s + 1)} disabled={!canProceed()}
               className={cn("flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-1",
-                canProceed() ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg" : "bg-gray-200 text-gray-400"
+                canProceed() ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg" : "bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-slate-500"
               )}>Next <ChevronRight size={16} /></button>
           ) : (
             <button onClick={handleSubmit}

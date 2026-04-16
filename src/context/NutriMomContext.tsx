@@ -32,7 +32,7 @@ interface NutriMomContextValue {
 // ─── Default Profile ─────────────────────────────────────
 const defaultProfile: UserProfile = {
   id: 'user_1',
-  email: 'harenee@nutrimom.app',
+  email: 'harenee@mealmagic.app',
   displayName: 'Harenee',
   profileType: 'pregnancy',
   weight: 60,

@@ -288,7 +288,7 @@ export function downloadRecipePDF(recipe: Recipe, language: PDFLanguage = 'en') 
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>${getName()} — NutriMom Recipe</title>
+  <title>${getName()} — Meal Magic Recipe</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -308,7 +308,7 @@ export function downloadRecipePDF(recipe: Recipe, language: PDFLanguage = 'en') 
 <body>
   <!-- Header -->
   <div style="background:linear-gradient(135deg,#10b981,#0d9488);padding:20px 24px;color:#fff;margin:0 -20px">
-    <h1 style="font-size:18px;font-weight:700;margin-bottom:2px">NutriMom</h1>
+    <h1 style="font-size:18px;font-weight:700;margin-bottom:2px">Meal Magic</h1>
     <p style="font-size:11px;opacity:0.85">${isEn ? 'Healthy Meal Planner' : 'ஆரோக்கிய உணவு திட்டமிடல்'}</p>
   </div>
 
@@ -350,7 +350,7 @@ export function downloadRecipePDF(recipe: Recipe, language: PDFLanguage = 'en') 
 
     <!-- Footer -->
     <div style="margin-top:30px;padding-top:12px;border-top:1px solid #e5e7eb;font-size:10px;color:#aaa;display:flex;justify-content:space-between">
-      <span>NutriMom — ${isEn ? 'Generated' : 'உருவாக்கப்பட்டது'} ${new Date().toLocaleDateString()}</span>
+      <span>Meal Magic — ${isEn ? 'Generated' : 'உருவாக்கப்பட்டது'} ${new Date().toLocaleDateString()}</span>
       <span>${isEn ? 'Language: English' : 'மொழி: தமிழ்'}</span>
     </div>
   </div>

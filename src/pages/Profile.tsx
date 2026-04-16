@@ -8,12 +8,12 @@ import { initDriveAuth, signIn, signOut, isDriveLinked, isDriveConfigured } from
 import { backupToDrive, restoreFromDrive, getLastSyncTime } from '@/lib/driveSync';
 
 const DEFICIENCY_OPTIONS = [
-  { id: 'iron', label: 'Iron', emoji: '🩸', color: 'bg-rose-50 text-rose-700 border-rose-200' },
-  { id: 'vitamin_d', label: 'Vitamin D', emoji: '☀️', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  { id: 'ferritin', label: 'Ferritin', emoji: '🔬', color: 'bg-purple-50 text-purple-700 border-purple-200' },
-  { id: 'b12', label: 'Vitamin B12', emoji: '💊', color: 'bg-sky-50 text-sky-700 border-sky-200' },
-  { id: 'calcium', label: 'Calcium', emoji: '🦴', color: 'bg-teal-50 text-teal-700 border-teal-200' },
-  { id: 'folic_acid', label: 'Folic Acid', emoji: '🧬', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { id: 'iron', label: 'Iron', emoji: '🩸', color: 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900' },
+  { id: 'vitamin_d', label: 'Vitamin D', emoji: '☀️', color: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900' },
+  { id: 'ferritin', label: 'Ferritin', emoji: '🔬', color: 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-900' },
+  { id: 'b12', label: 'Vitamin B12', emoji: '💊', color: 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 border-sky-200 dark:border-sky-900' },
+  { id: 'calcium', label: 'Calcium', emoji: '🦴', color: 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-900' },
+  { id: 'folic_acid', label: 'Folic Acid', emoji: '🧬', color: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900' },
 ];
 
 const Profile = () => {
@@ -114,7 +114,7 @@ const Profile = () => {
             "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all",
             isEditing
               ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg"
-              : "bg-white/70 text-gray-600 border border-gray-200 hover:border-emerald-300"
+              : "bg-white/70 dark:bg-slate-800/70 text-gray-600 dark:text-slate-400 border border-gray-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-700"
           )}
         >
           {isEditing ? <><Check size={14} /> Save</> : <><Edit2 size={14} /> Edit</>}
@@ -122,7 +122,7 @@ const Profile = () => {
       </div>
 
       {/* Profile Card */}
-      <GlassCard className="p-5 bg-gradient-to-br from-emerald-50/80 to-teal-50/80 border-emerald-200/50">
+      <GlassCard className="p-5 bg-gradient-to-br from-emerald-50/80 to-teal-50/80 dark:from-emerald-950/30 dark:to-teal-950/30 border-emerald-200/50 dark:border-emerald-900/50">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-3xl shadow-lg shadow-emerald-500/20">
             {activeProfile.profileType === 'pregnancy' ? '\uD83E\uDD30' : '\u2764\uFE0F'}
@@ -136,16 +136,16 @@ const Profile = () => {
                 className="text-lg font-bold bg-white/60 rounded-lg px-2 py-1 border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300"
               />
             ) : (
-              <h2 className="text-lg font-bold text-gray-800">{activeProfile.displayName}</h2>
+              <h2 className="text-lg font-bold text-gray-800 dark:text-slate-200">{activeProfile.displayName}</h2>
             )}
-            <p className="text-xs text-gray-500 mt-0.5">{activeProfile.email}</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{activeProfile.email}</p>
           </div>
         </div>
       </GlassCard>
 
       {/* Profile Type */}
       <div>
-        <h3 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-1.5">
+        <h3 className="text-sm font-bold text-gray-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
           <Shield size={14} className="text-emerald-500" /> Health Focus
         </h3>
         <div className="grid grid-cols-2 gap-3">
@@ -160,14 +160,14 @@ const Profile = () => {
               className={cn(
                 "p-3.5 rounded-xl border-2 transition-all text-left",
                 (isEditing ? editType : activeProfile.profileType) === opt.type
-                  ? "border-emerald-400 bg-emerald-50/50"
-                  : "border-gray-200 bg-white/50",
+                  ? "border-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/40"
+                  : "border-gray-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900/50",
                 !isEditing && "opacity-80"
               )}
             >
               <span className="text-2xl block mb-1">{opt.emoji}</span>
-              <h4 className="text-sm font-bold text-gray-800">{opt.label}</h4>
-              <p className="text-[10px] text-gray-400 mt-0.5">{opt.desc}</p>
+              <h4 className="text-sm font-bold text-gray-800 dark:text-slate-200">{opt.label}</h4>
+              <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-0.5">{opt.desc}</p>
             </button>
           ))}
         </div>
@@ -175,49 +175,49 @@ const Profile = () => {
 
       {/* Body Stats */}
       <GlassCard className="p-4">
-        <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-1.5">
+        <h3 className="text-sm font-bold text-gray-700 dark:text-slate-300 mb-3 flex items-center gap-1.5">
           <Activity size={14} className="text-emerald-500" /> Body Stats
         </h3>
         <div className="grid grid-cols-3 gap-3">
           <div className="text-center">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 mx-auto mb-1.5 flex items-center justify-center">
-              <Scale size={16} className="text-emerald-600" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 mx-auto mb-1.5 flex items-center justify-center">
+              <Scale size={16} className="text-emerald-600 dark:text-emerald-400" />
             </div>
             {isEditing ? (
               <input type="number" value={editWeight} onChange={e => setEditWeight(+e.target.value)}
-                className="w-full text-center text-sm font-bold bg-gray-50 rounded-lg px-1 py-1 border border-gray-200" />
+                className="w-full text-center text-sm font-bold bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-200 rounded-lg px-1 py-1 border border-gray-200 dark:border-slate-700" />
             ) : (
-              <span className="text-sm font-bold text-gray-800">{activeProfile.weight} kg</span>
+              <span className="text-sm font-bold text-gray-800 dark:text-slate-200">{activeProfile.weight} kg</span>
             )}
-            <p className="text-[10px] text-gray-400">Weight</p>
+            <p className="text-[10px] text-gray-400 dark:text-slate-500">Weight</p>
           </div>
           <div className="text-center">
-            <div className="w-10 h-10 rounded-xl bg-teal-50 mx-auto mb-1.5 flex items-center justify-center">
-              <Ruler size={16} className="text-teal-600" />
+            <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/50 mx-auto mb-1.5 flex items-center justify-center">
+              <Ruler size={16} className="text-teal-600 dark:text-teal-400" />
             </div>
             {isEditing ? (
               <input type="number" value={editHeight} onChange={e => setEditHeight(+e.target.value)}
-                className="w-full text-center text-sm font-bold bg-gray-50 rounded-lg px-1 py-1 border border-gray-200" />
+                className="w-full text-center text-sm font-bold bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-200 rounded-lg px-1 py-1 border border-gray-200 dark:border-slate-700" />
             ) : (
-              <span className="text-sm font-bold text-gray-800">{activeProfile.height} cm</span>
+              <span className="text-sm font-bold text-gray-800 dark:text-slate-200">{activeProfile.height} cm</span>
             )}
-            <p className="text-[10px] text-gray-400">Height</p>
+            <p className="text-[10px] text-gray-400 dark:text-slate-500">Height</p>
           </div>
           <div className="text-center">
-            <div className="w-10 h-10 rounded-xl bg-sky-50 mx-auto mb-1.5 flex items-center justify-center">
-              <User size={16} className="text-sky-600" />
+            <div className="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950/50 mx-auto mb-1.5 flex items-center justify-center">
+              <User size={16} className="text-sky-600 dark:text-sky-400" />
             </div>
             {isEditing ? (
               <input type="number" value={editAge} onChange={e => setEditAge(+e.target.value)}
-                className="w-full text-center text-sm font-bold bg-gray-50 rounded-lg px-1 py-1 border border-gray-200" />
+                className="w-full text-center text-sm font-bold bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-200 rounded-lg px-1 py-1 border border-gray-200 dark:border-slate-700" />
             ) : (
-              <span className="text-sm font-bold text-gray-800">{activeProfile.age} yrs</span>
+              <span className="text-sm font-bold text-gray-800 dark:text-slate-200">{activeProfile.age} yrs</span>
             )}
-            <p className="text-[10px] text-gray-400">Age</p>
+            <p className="text-[10px] text-gray-400 dark:text-slate-500">Age</p>
           </div>
         </div>
-        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
-          <span className="text-xs text-gray-500">BMI</span>
+        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between">
+          <span className="text-xs text-gray-500 dark:text-slate-400">BMI</span>
           <span className={cn("text-sm font-bold", bmiColor)}>
             {bmi.toFixed(1)} &mdash; {bmiLabel}
           </span>
@@ -226,10 +226,10 @@ const Profile = () => {
 
       {/* Deficiencies */}
       <div>
-        <h3 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-1.5">
+        <h3 className="text-sm font-bold text-gray-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
           <Languages size={14} className="text-emerald-500" /> Nutritional Deficiencies
         </h3>
-        <p className="text-xs text-gray-400 mb-3">
+        <p className="text-xs text-gray-400 dark:text-slate-500 mb-3">
           Select your known deficiencies &mdash; we'll recommend recipes rich in these nutrients.
         </p>
         <div className="flex flex-wrap gap-2">
@@ -242,7 +242,7 @@ const Profile = () => {
                 disabled={!isEditing}
                 className={cn(
                   "text-xs px-3 py-2 rounded-xl font-medium border transition-all flex items-center gap-1.5",
-                  isSelected ? def.color : "bg-gray-50 text-gray-400 border-gray-200",
+                  isSelected ? def.color : "bg-gray-50 dark:bg-slate-800 text-gray-400 dark:text-slate-500 border-gray-200 dark:border-slate-700",
                   isEditing && "cursor-pointer hover:scale-105",
                   !isEditing && "cursor-default"
                 )}
@@ -258,28 +258,28 @@ const Profile = () => {
 
       {/* Language */}
       <GlassCard className="p-4">
-        <h3 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-1.5">
+        <h3 className="text-sm font-bold text-gray-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
           <Languages size={14} className="text-emerald-500" /> Language
         </h3>
         <div className="flex gap-3">
           <button className={cn(
             "flex-1 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all",
             activeProfile.preferredLanguage === 'en'
-              ? "border-emerald-400 bg-emerald-50 text-emerald-700"
-              : "border-gray-200 bg-white text-gray-500"
+              ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400"
+              : "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400"
           )}>&#x1F1EC;&#x1F1E7; English</button>
           <button className={cn(
             "flex-1 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all",
             activeProfile.preferredLanguage === 'ta'
-              ? "border-emerald-400 bg-emerald-50 text-emerald-700"
-              : "border-gray-200 bg-white text-gray-500"
+              ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400"
+              : "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400"
           )}>&#x1F1EE;&#x1F1F3; &#xBA4;&#xBAE;&#xBBF;&#xBB4;&#xBCD;</button>
         </div>
       </GlassCard>
 
       {/* Backup & Sync */}
-      <GlassCard className="p-4 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 border-blue-200/40">
-        <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-1.5">
+      <GlassCard className="p-4 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200/40 dark:border-blue-900/40">
+        <h3 className="text-sm font-bold text-gray-700 dark:text-slate-300 mb-3 flex items-center gap-1.5">
           <Cloud size={14} className="text-blue-500" /> Backup & Sync
         </h3>
 

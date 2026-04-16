@@ -46,7 +46,7 @@ const Login = () => {
           <Heart size={36} className="text-emerald-600 fill-emerald-600" />
         </div>
         
-        <h1 className="text-3xl font-black text-gray-800 tracking-tight mb-2">NutriMom</h1>
+        <h1 className="text-3xl font-black text-gray-800 tracking-tight mb-2">Meal Magic</h1>
         <p className="text-emerald-600/80 font-medium mb-8">Healthy Meal Planning</p>
 
         <div className="w-full space-y-4">

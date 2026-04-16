@@ -46,7 +46,7 @@ export function downloadGroceryListPDF(alerts: IngredientCheck[]) {
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Grocery Shopping List — NutriMom</title>
+  <title>Grocery Shopping List — Meal Magic</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -67,7 +67,7 @@ export function downloadGroceryListPDF(alerts: IngredientCheck[]) {
 <body>
   <div style="text-align: center; margin-bottom: 32px;">
     <h1 style="font-size: 28px; font-weight: 700; color: #064e3b; margin-bottom: 8px;">Shopping List</h1>
-    <p style="color: #6b7280;">NutriMom • ${new Date().toLocaleDateString()}</p>
+    <p style="color: #6b7280;">Meal Magic • ${new Date().toLocaleDateString()}</p>
   </div>
 
   <div style="background: #f9fafb; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb;">
@@ -117,7 +117,7 @@ export function downloadSmartShoppingListPDF(items: { name: string; displayQty: 
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Smart Shopping List — NutriMom</title>
+  <title>Smart Shopping List — Meal Magic</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -138,7 +138,7 @@ export function downloadSmartShoppingListPDF(items: { name: string; displayQty: 
 <body>
   <div style="text-align: center; margin-bottom: 32px;">
     <h1 style="font-size: 28px; font-weight: 700; color: #064e3b; margin-bottom: 8px;">Smart Shopping List</h1>
-    <p style="color: #6b7280;">NutriMom • ${new Date().toLocaleDateString()}</p>
+    <p style="color: #6b7280;">Meal Magic • ${new Date().toLocaleDateString()}</p>
     <p style="font-size: 13px; color: #9ca3af; margin-top: 4px;">What you need for your planned meals minus what you already have.</p>
   </div>
 

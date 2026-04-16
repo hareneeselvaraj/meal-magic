@@ -116,7 +116,7 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
   const unseenAlertCount = ingredientAlerts.length;
 
   return (
-    <div className="space-y-5 pb-8 relative">
+    <div className="space-y-5 pb-8 relative dark:text-slate-100">
       {/* Header - Profile Left, Notifications/Theme Right */}
       <div className="flex items-start justify-between">
         <div className="flex flex-col">
@@ -137,14 +137,14 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
         <div className="flex items-center gap-2 mt-1 relative z-50">
           <button
             onClick={toggleTheme}
-            className="w-10 h-10 rounded-full bg-white/70 backdrop-blur-sm border border-white/40 flex items-center justify-center hover:bg-white text-gray-500 transition-all touch-manipulation"
+            className="w-10 h-10 rounded-full bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border border-white/40 dark:border-slate-700 flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400 transition-all touch-manipulation"
           >
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="w-10 h-10 rounded-full bg-white/70 backdrop-blur-sm border border-white/40 flex items-center justify-center hover:bg-white text-gray-700 transition-all touch-manipulation relative"
+            className="w-10 h-10 rounded-full bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border border-white/40 dark:border-slate-700 flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 transition-all touch-manipulation relative"
           >
             <Bell size={20} className={unseenAlertCount > 0 ? "text-rose-500" : ""} />
             {unseenAlertCount > 0 && (
@@ -156,9 +156,9 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
 
           {/* Notifications Dropdown Panel */}
           {showNotifications && (
-            <div className="absolute top-12 right-0 w-80 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-emerald-900/10 border border-white z-50 overflow-hidden transform transition-all origin-top-right">
-              <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                <h3 className="font-bold text-gray-800 flex items-center gap-2">
+            <div className="absolute top-12 right-0 w-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-xl shadow-emerald-900/10 border border-white dark:border-slate-800 z-50 overflow-hidden transform transition-all origin-top-right">
+              <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-gray-50/50 dark:bg-slate-950/50">
+                <h3 className="font-bold text-gray-800 dark:text-slate-200 flex items-center gap-2">
                   <Bell size={16} className="text-emerald-500" /> Ingredient Alerts
                 </h3>
                 <button onClick={() => setShowNotifications(false)} className="text-gray-400 hover:text-gray-600">
@@ -215,15 +215,15 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
       </div>
 
       {/* Health Tip Card */}
-      <GlassCard className="bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200/50 p-4">
+      <GlassCard className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border-emerald-200/50 dark:border-emerald-900/50 p-4">
         <div className="flex items-start gap-3">
           <span className="text-2xl mt-0.5">{dailyTip.emoji}</span>
           <div className="flex-1">
             <div className="flex items-center gap-1.5 mb-1">
-              <Sparkles size={14} className="text-emerald-600" />
-              <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Health Tip</span>
+              <Sparkles size={14} className="text-emerald-600 dark:text-emerald-400" />
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Health Tip</span>
             </div>
-            <p className="text-sm text-gray-700 leading-relaxed">{dailyTip.text}</p>
+            <p className="text-sm text-gray-700 dark:text-slate-300 leading-relaxed">{dailyTip.text}</p>
           </div>
         </div>
       </GlassCard>
@@ -235,11 +235,11 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
             <Leaf size={18} className="text-emerald-500" />
             Today's Progress
           </h2>
-          <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+          <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full">
             {completedCount}/5 meals
           </span>
         </div>
-        <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+        <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-500"
             style={{ width: `${(completedCount / 5) * 100}%` }}
@@ -256,7 +256,7 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
                   "w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all relative z-10",
                   isComplete
                     ? "bg-emerald-500 text-white shadow-sm"
-                    : "bg-gray-100 text-gray-400 hover:bg-emerald-100"
+                    : "bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500 hover:bg-emerald-100 dark:hover:bg-slate-700"
                 )}
                 title={slot.label}
               >
@@ -282,35 +282,35 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
               <div
                 key={slot.key}
                 onClick={recipe ? () => setExpandedSlots(prev => ({ ...prev, [slot.key]: !prev[slot.key] })) : onNavigateToPlan}
-                className={cn(
+                 className={cn(
                   "rounded-2xl border transition-all duration-200 overflow-hidden relative z-10 cursor-pointer",
                   isComplete
-                    ? "bg-emerald-50/80 border-emerald-200/60"
-                    : "bg-white/70 backdrop-blur-sm border-white/40 hover:border-emerald-200",
-                  recipe && expandedSlots[slot.key] && "shadow-md hover:border-emerald-300"
+                    ? "bg-emerald-50/80 dark:bg-emerald-900/30 border-emerald-200/60 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-100"
+                    : "bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm border-white/40 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-emerald-800",
+                  recipe && expandedSlots[slot.key] && "shadow-md hover:border-emerald-300 dark:hover:border-emerald-700"
                 )}
               >
                 <div className="p-3.5 flex items-center gap-3">
                   <div className={cn(
                     "w-11 h-11 rounded-xl flex items-center justify-center text-lg shrink-0",
-                    isComplete ? "bg-emerald-100" : "bg-gray-50"
+                    isComplete ? "bg-emerald-100 dark:bg-emerald-900/50" : "bg-gray-50 dark:bg-slate-800"
                   )}>
                     {slot.emoji}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-bold text-gray-800">{slot.label}</h3>
-                      <span className="text-[10px] text-gray-400">{slot.time}</span>
+                      <h3 className="text-sm font-bold text-gray-800 dark:text-slate-200">{slot.label}</h3>
+                      <span className="text-[10px] text-gray-400 dark:text-slate-500">{slot.time}</span>
                     </div>
                     {recipe ? (
                       <div className="flex items-center gap-2 mt-0.5">
-                        <p className="text-xs text-gray-600 truncate">{recipe.name}</p>
-                        <span className="flex items-center gap-0.5 text-[10px] text-gray-400 shrink-0">
+                        <p className="text-xs text-gray-600 dark:text-slate-300 truncate">{recipe.name}</p>
+                        <span className="flex items-center gap-0.5 text-[10px] text-gray-400 dark:text-slate-500 shrink-0">
                           <Clock size={10} /> {recipe.prepTimeMinutes + recipe.cookTimeMinutes}m
                         </span>
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-400 italic mt-0.5">Tap to choose a recipe</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500 italic mt-0.5">Tap to choose a recipe</p>
                     )}
                     {recipe && recipe.healthTags.length > 0 && (
                       <div className="flex gap-1 mt-1">
@@ -409,38 +409,38 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
       {/* Dashboard Widgets */}
       <div className="grid grid-cols-2 gap-3">
         {/* Low Stock Alert */}
-        <GlassCard onClick={() => setShowLowStockModal(true)} className="p-3 bg-gradient-to-br from-rose-50/50 to-orange-50/50 border-rose-200/40 cursor-pointer hover:shadow-md transition-all active:scale-95">
-          <h3 className="text-xs font-bold text-gray-800 flex items-center gap-1.5 mb-2">
+        <GlassCard onClick={() => setShowLowStockModal(true)} className="p-3 bg-gradient-to-br from-rose-50/50 dark:from-rose-950/30 to-orange-50/50 dark:to-orange-950/30 border-rose-200/40 dark:border-rose-900/30 cursor-pointer hover:shadow-md transition-all active:scale-95">
+          <h3 className="text-xs font-bold text-gray-800 dark:text-slate-200 flex items-center gap-1.5 mb-2">
             <AlertTriangle size={12} className="text-rose-500" /> Low Stock
           </h3>
           {lowStockItems.length === 0 ? (
-            <p className="text-[10px] text-gray-500">Pantry is fully stocked!</p>
+            <p className="text-[10px] text-gray-500 dark:text-slate-500">Pantry is fully stocked!</p>
           ) : (
             <div className="space-y-1.5 text-[10px]">
               {lowStockItems.slice(0, 3).map(item => (
-                <div key={item.id} className="flex justify-between items-center text-gray-700 bg-white/60 px-1.5 py-1 rounded border border-rose-100">
+                <div key={item.id} className="flex justify-between items-center text-gray-700 dark:text-slate-300 bg-white/60 dark:bg-slate-900/60 px-1.5 py-1 rounded border border-rose-100 dark:border-rose-900/50">
                   <span className="truncate max-w-[80px]">{item.name}</span>
-                  <span className="font-semibold text-rose-600">{item.quantity}{item.unit}</span>
+                  <span className="font-semibold text-rose-600 dark:text-rose-400">{item.quantity}{item.unit}</span>
                 </div>
               ))}
               {lowStockItems.length > 3 && (
-                <div className="text-center text-gray-400 font-medium pt-1">+{lowStockItems.length - 3} more</div>
+                <div className="text-center text-gray-400 dark:text-slate-500 font-medium pt-1">+{lowStockItems.length - 3} more</div>
               )}
             </div>
           )}
         </GlassCard>
 
         {/* Cookable Right Now */}
-        <GlassCard className="p-3 bg-gradient-to-br from-amber-50/50 to-yellow-50/50 border-amber-200/40">
-          <h3 className="text-xs font-bold text-gray-800 flex items-center gap-1.5 mb-2">
+        <GlassCard className="p-3 bg-gradient-to-br from-amber-50/50 dark:from-amber-950/30 to-yellow-50/50 dark:to-yellow-950/30 border-amber-200/40 dark:border-amber-900/30">
+          <h3 className="text-xs font-bold text-gray-800 dark:text-slate-200 flex items-center gap-1.5 mb-2">
             <Utensils size={12} className="text-amber-500" /> Cookable Now
           </h3>
           {cookableRecipes.length === 0 ? (
-            <p className="text-[10px] text-gray-500">Need groceries to cook.</p>
+            <p className="text-[10px] text-gray-500 dark:text-slate-500">Need groceries to cook.</p>
           ) : (
             <div className="space-y-1.5 text-[10px]">
               {cookableRecipes.map(recipe => (
-                <div key={recipe.id} className="text-gray-700 bg-white/60 px-1.5 py-1 rounded truncate border border-amber-100 font-medium">
+                <div key={recipe.id} className="text-gray-700 dark:text-slate-300 bg-white/60 dark:bg-slate-900/60 px-1.5 py-1 rounded truncate border border-amber-100 dark:border-amber-900/50 font-medium">
                   {recipe.name}
                 </div>
               ))}
@@ -461,11 +461,11 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
                 key={def}
                 className={cn(
                   "text-xs px-3 py-1.5 rounded-full font-medium border",
-                  def === 'iron' && "bg-rose-50 text-rose-700 border-rose-200",
-                  def === 'vitamin_d' && "bg-amber-50 text-amber-700 border-amber-200",
-                  def === 'ferritin' && "bg-purple-50 text-purple-700 border-purple-200",
-                  def === 'b12' && "bg-sky-50 text-sky-700 border-sky-200",
-                  def === 'calcium' && "bg-teal-50 text-teal-700 border-teal-200",
+                  def === 'iron' && "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/50",
+                  def === 'vitamin_d' && "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/50",
+                  def === 'ferritin' && "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-900/50",
+                  def === 'b12' && "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-900/50",
+                  def === 'calcium' && "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/40 dark:text-teal-400 dark:border-teal-900/50",
                 )}
               >
                 {def.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}

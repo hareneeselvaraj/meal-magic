@@ -71,15 +71,15 @@ const MealPlanner = () => {
       {/* Date Navigation */}
       <GlassCard className="p-3">
         <div className="flex items-center justify-between mb-3">
-          <button onClick={() => navigateDay(-1)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-emerald-100">
-            <ChevronLeft size={16} className="text-gray-600" />
+          <button onClick={() => navigateDay(-1)} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center hover:bg-emerald-100 dark:hover:bg-slate-700 transition-colors">
+            <ChevronLeft size={16} className="text-gray-600 dark:text-slate-400" />
           </button>
           <div className="text-center">
-            <h2 className="text-sm font-bold text-gray-800">{dateDisplay}</h2>
-            {isToday && <span className="text-[10px] text-emerald-600 font-medium">Today</span>}
+            <h2 className="text-sm font-bold text-gray-800 dark:text-slate-200">{dateDisplay}</h2>
+            {isToday && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Today</span>}
           </div>
-          <button onClick={() => navigateDay(1)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-emerald-100">
-            <ChevronRight size={16} className="text-gray-600" />
+          <button onClick={() => navigateDay(1)} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center hover:bg-emerald-100 dark:hover:bg-slate-700 transition-colors">
+            <ChevronRight size={16} className="text-gray-600 dark:text-slate-400" />
           </button>
         </div>
 
@@ -97,13 +97,13 @@ const MealPlanner = () => {
                 onClick={() => setCurrentDate(day)}
                 className={cn(
                   "flex flex-col items-center gap-0.5 py-1.5 px-2 rounded-xl transition-all",
-                  isSelected ? "bg-emerald-500 text-white" : "hover:bg-gray-100"
+                  isSelected ? "bg-emerald-500 text-white" : "hover:bg-gray-100 dark:hover:bg-slate-800"
                 )}
               >
-                <span className={cn("text-[9px] font-medium uppercase", isSelected ? "text-emerald-100" : "text-gray-400")}>
+                <span className={cn("text-[9px] font-medium uppercase", isSelected ? "text-emerald-100" : "text-gray-400 dark:text-slate-500")}>
                   {day.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0)}
                 </span>
-                <span className={cn("text-sm font-bold", isSelected ? "text-white" : "text-gray-700")}>
+                <span className={cn("text-sm font-bold", isSelected ? "text-white" : "text-gray-700 dark:text-slate-300")}>
                   {day.getDate()}
                 </span>
                 {dayCompleted > 0 && (
@@ -117,13 +117,13 @@ const MealPlanner = () => {
 
       {/* Progress */}
       <div className="flex items-center gap-3">
-        <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+        <div className="flex-1 bg-gray-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all"
             style={{ width: `${(completedCount / 5) * 100}%` }}
           />
         </div>
-        <span className="text-xs font-semibold text-gray-500">{completedCount}/5</span>
+        <span className="text-xs font-semibold text-gray-500 dark:text-slate-400">{completedCount}/5</span>
       </div>
 
       {/* Meal Slots */}
@@ -138,10 +138,10 @@ const MealPlanner = () => {
               className={cn(
                 "rounded-2xl border overflow-hidden transition-all",
                 isComplete
-                  ? "bg-emerald-50/80 border-emerald-200/60"
+                  ? "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-200/60 dark:border-emerald-900/60"
                   : recipe
-                    ? "bg-white/70 border-white/40"
-                    : "bg-white/50 border-dashed border-gray-200"
+                    ? "bg-white/70 dark:bg-slate-900/70 border-white/40 dark:border-slate-800"
+                    : "bg-white/50 dark:bg-slate-900/50 border-dashed border-gray-200 dark:border-slate-700/80"
               )}
             >
               <div className="p-3.5 flex items-center gap-3">
@@ -151,7 +151,7 @@ const MealPlanner = () => {
                     "w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 transition-all",
                     isComplete
                       ? "bg-emerald-500 text-white"
-                      : "bg-gray-50 hover:bg-emerald-100"
+                      : "bg-gray-50 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700"
                   )}
                 >
                   {isComplete ? <Check size={18} strokeWidth={3} /> : slot.emoji}
@@ -159,20 +159,20 @@ const MealPlanner = () => {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-gray-800">{slot.label}</h3>
-                    <span className="text-[10px] text-gray-400">{slot.time}</span>
+                    <h3 className="text-sm font-bold text-gray-800 dark:text-slate-200">{slot.label}</h3>
+                    <span className="text-[10px] text-gray-400 dark:text-slate-500">{slot.time}</span>
                   </div>
                   {recipe ? (
                     <div className="flex items-center gap-2 mt-0.5">
-                      <p className={cn("text-xs truncate", isComplete ? "text-emerald-700" : "text-gray-600")}>{recipe.name}</p>
-                      <span className="flex items-center gap-0.5 text-[10px] text-gray-400 shrink-0">
+                      <p className={cn("text-xs truncate", isComplete ? "text-emerald-700 dark:text-emerald-400" : "text-gray-600 dark:text-slate-400")}>{recipe.name}</p>
+                      <span className="flex items-center gap-0.5 text-[10px] text-gray-400 dark:text-slate-500 shrink-0">
                         <Clock size={10} /> {recipe.prepTimeMinutes + recipe.cookTimeMinutes}m
                       </span>
                     </div>
                   ) : (
                     <button
                       onClick={() => { setSelectingSlot(slot.key); setSearchQuery(''); }}
-                      className="text-xs text-emerald-600 font-medium mt-0.5 hover:text-emerald-700"
+                      className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
                     >
                       + Add recipe
                     </button>
