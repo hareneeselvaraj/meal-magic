@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useNutriMom } from '@/context/NutriMomContext';
+import { useMealPlanner } from '@/context/MealPlannerContext';
 import GlassCard from '@/components/GlassCard';
 import { cn } from '@/lib/utils';
 import { Globe, Plus, Edit2, Trash2, X, Check, ChefHat } from 'lucide-react';
 
 const Cuisines = () => {
-  const { cuisines, addCuisine, updateCuisine, deleteCuisine, recipes } = useNutriMom();
+  const { cuisines, addCuisine, updateCuisine, deleteCuisine, recipes } = useMealPlanner();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formName, setFormName] = useState('');

@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
-import type { Cuisine, Recipe, MealPlan, MealSlot, UserProfile, MealPlanMeals } from '@/lib/types';
+import type { Cuisine, Recipe, MealPlan, MealSlot, MealPlanServings, UserProfile, MealPlanMeals } from '@/lib/types';
 import { seedRecipes, defaultCuisines } from '@/data/seedData';
 
 // ─── Types ───────────────────────────────────────────────
-interface NutriMomContextValue {
+interface MealPlannerContextValue {
   // User Profile
   activeProfile: UserProfile;
   setActiveProfile: (profile: UserProfile) => void;
@@ -25,6 +25,8 @@ interface NutriMomContextValue {
   // Meal Plans
   mealPlans: Record<string, MealPlan>; // keyed by date string
   setMealForSlot: (date: string, slot: MealSlot, recipeId: string | null) => void;
+  setServingsForSlot: (date: string, slot: MealSlot, servings: number) => void;
+  getServingsForSlot: (date: string, slot: MealSlot) => number;
   toggleMealComplete: (date: string, slot: MealSlot) => void;
   getMealPlan: (date: string) => MealPlan | null;
 }
@@ -59,7 +61,7 @@ const initialRecipes: Recipe[] = seedRecipes.map(r => ({
 }));
 
 // ─── Context ─────────────────────────────────────────────
-const NutriMomContext = createContext<NutriMomContextValue | null>(null);
+const MealPlannerContext = createContext<MealPlannerContextValue | null>(null);
 
 // ─── Provider ────────────────────────────────────────────
 // ── LocalStorage helpers ─────────────────────────────────
@@ -70,7 +72,7 @@ function loadJSON<T>(key: string, fallback: T): T {
   } catch { return fallback; }
 }
 
-export const NutriMomProvider = ({ children }: { children: ReactNode }) => {
+export const MealPlannerProvider = ({ children }: { children: ReactNode }) => {
   const [activeProfile, setActiveProfile] = useState<UserProfile>(() => loadJSON('nm_profile', defaultProfile));
   const [cuisines, setCuisines] = useState<Cuisine[]>(() => loadJSON('nm_cuisines', initialCuisines));
   const [recipes, setRecipes] = useState<Recipe[]>(() => loadJSON('nm_recipes', initialRecipes));
@@ -135,27 +137,55 @@ export const NutriMomProvider = ({ children }: { children: ReactNode }) => {
     return recipes.filter(r => r.mealSlot === slot);
   }, [recipes]);
 
+  // ── Default servings helper ────────────────────────────
+  const DEFAULT_SERVINGS: MealPlanServings = { morning_juice: 1, breakfast: 1, lunch: 1, snack: 1, dinner: 1 };
+
+  const ensurePlan = (prev: Record<string, MealPlan>, date: string): MealPlan =>
+    prev[date] || {
+      id: `mp_${date}`,
+      userId: activeProfile.id,
+      date,
+      meals: { morning_juice: null, breakfast: null, lunch: null, snack: null, dinner: null },
+      servingsPerSlot: { ...DEFAULT_SERVINGS },
+      completedMeals: [],
+      notes: null,
+      createdAt: new Date(),
+    };
+
   // ── Meal Plan Operations ──────────────────────────────
   const setMealForSlot = useCallback((date: string, slot: MealSlot, recipeId: string | null) => {
     setMealPlans(prev => {
-      const existing = prev[date] || {
-        id: `mp_${date}`,
-        userId: activeProfile.id,
-        date,
-        meals: { morning_juice: null, breakfast: null, lunch: null, snack: null, dinner: null },
-        completedMeals: [],
-        notes: null,
-        createdAt: new Date(),
-      };
+      const existing = ensurePlan(prev, date);
+      // Auto-set servings to recipe's default when assigning
+      const recipe = recipeId ? recipes.find(r => r.id === recipeId) : null;
+      const newServings = recipe ? recipe.servings : 1;
       return {
         ...prev,
         [date]: {
           ...existing,
           meals: { ...existing.meals, [slot]: recipeId },
+          servingsPerSlot: { ...existing.servingsPerSlot, [slot]: newServings },
+        },
+      };
+    });
+  }, [activeProfile.id, recipes]);
+
+  const setServingsForSlot = useCallback((date: string, slot: MealSlot, servings: number) => {
+    setMealPlans(prev => {
+      const existing = ensurePlan(prev, date);
+      return {
+        ...prev,
+        [date]: {
+          ...existing,
+          servingsPerSlot: { ...existing.servingsPerSlot, [slot]: Math.max(1, servings) },
         },
       };
     });
   }, [activeProfile.id]);
+
+  const getServingsForSlot = useCallback((date: string, slot: MealSlot): number => {
+    return mealPlans[date]?.servingsPerSlot?.[slot] ?? 1;
+  }, [mealPlans]);
 
   const toggleMealComplete = useCallback((date: string, slot: MealSlot) => {
     setMealPlans(prev => {
@@ -173,20 +203,20 @@ export const NutriMomProvider = ({ children }: { children: ReactNode }) => {
   }, [mealPlans]);
 
   return (
-    <NutriMomContext.Provider value={{
+    <MealPlannerContext.Provider value={{
       activeProfile, setActiveProfile,
       cuisines, addCuisine, updateCuisine, deleteCuisine,
       recipes, addRecipe, updateRecipe, deleteRecipe, getRecipesByCuisine, getRecipesBySlot,
-      mealPlans, setMealForSlot, toggleMealComplete, getMealPlan,
+      mealPlans, setMealForSlot, setServingsForSlot, getServingsForSlot, toggleMealComplete, getMealPlan,
     }}>
       {children}
-    </NutriMomContext.Provider>
+    </MealPlannerContext.Provider>
   );
 };
 
 // ─── Hook ────────────────────────────────────────────────
-export const useNutriMom = () => {
-  const ctx = useContext(NutriMomContext);
-  if (!ctx) throw new Error('useNutriMom must be used inside <NutriMomProvider>');
+export const useMealPlanner = () => {
+  const ctx = useContext(MealPlannerContext);
+  if (!ctx) throw new Error('useMealPlanner must be used inside <MealPlannerProvider>');
   return ctx;
 };

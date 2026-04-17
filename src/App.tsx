@@ -7,7 +7,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Login from "./pages/Login.tsx";
-import { NutriMomProvider } from "@/context/NutriMomContext";
+import { MealPlannerProvider } from "@/context/MealPlannerContext";
 import { GroceryProvider } from "@/context/GroceryContext";
 import { isDriveLinked } from "@/lib/driveAuth";
 
@@ -30,7 +30,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <ErrorBoundary>
-        <NutriMomProvider>
+        <MealPlannerProvider>
           <GroceryProvider>
             <BrowserRouter>
               <Routes>
@@ -40,7 +40,7 @@ const App = () => (
               </Routes>
             </BrowserRouter>
           </GroceryProvider>
-        </NutriMomProvider>
+        </MealPlannerProvider>
       </ErrorBoundary>
     </TooltipProvider>
   </QueryClientProvider>

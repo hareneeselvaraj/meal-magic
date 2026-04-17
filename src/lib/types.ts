@@ -1,7 +1,7 @@
 
 
 // ═══════════════════════════════════════════════════════
-//  NUTRIMOM PWA — Complete Type System
+//  MEAL PLANNER PWA — Complete Type System
 // ═══════════════════════════════════════════════════════
 
 // ── User Profiles ────────────────────────────────────────
@@ -105,11 +105,20 @@ export interface MealPlanMeals {
   dinner: string | null;
 }
 
+export interface MealPlanServings {
+  morning_juice: number;
+  breakfast: number;
+  lunch: number;
+  snack: number;
+  dinner: number;
+}
+
 export interface MealPlan {
   id: string;
   userId: string;
   date: string; // ISO date string YYYY-MM-DD
   meals: MealPlanMeals;
+  servingsPerSlot: MealPlanServings;
   completedMeals: MealSlot[];
   notes: string | null;
   createdAt: Date | number;

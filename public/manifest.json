@@ -1,6 +1,6 @@
 {
-  "name": "NutriMom — Healthy Meal Planner",
-  "short_name": "NutriMom",
+  "name": "Meal Planner — Healthy Recipes",
+  "short_name": "Meal Planner",
   "description": "Personalized meal planning for pregnancy & heart health",
   "start_url": "/",
   "display": "standalone",

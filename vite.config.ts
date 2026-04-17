@@ -26,8 +26,8 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "logo.png", "robots.txt"],
       manifest: {
-        name: "NutriMom \u2014 Healthy Meal Planner",
-        short_name: "NutriMom",
+        name: "Meal Planner \u2014 Healthy Recipes",
+        short_name: "Meal Planner",
         description: "Daily meals, grocery tracking, and bill scanning",
         start_url: "/",
         scope: "/",

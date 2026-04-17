@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { FlavorTag, MealSlot, Recipe } from '@/data/mockData';
 import { useRecipes } from '@/context/RecipeContext';
+import { extractWithAI } from '@/lib/aiFetcher';
 
 interface RecipeBuilderProps {
   onClose: () => void;
@@ -80,36 +81,8 @@ const RecipeBuilder = ({ onClose, recipe: editRecipe }: RecipeBuilderProps) => {
     setIsExtracting(true);
     setExtractionStatus('Analyzing image...');
     try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-      if (!apiKey) {
-        setTimeout(() => {
-          setIngredients([
-            { name: 'Onions', qty: '100 g' }, { name: 'Tomatoes', qty: '80 g' },
-            { name: 'Rice', qty: '200 g' }, { name: 'Turmeric Powder', qty: '1 tsp' },
-          ]);
-          setIsExtracting(false);
-          setExtractionStatus('Extracted (mock)');
-        }, 1500);
-        return;
-      }
-
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: 'Extract the recipe from this image. Return ONLY valid JSON: {"name":"Recipe Name","ingredients":[{"name":"Onion","qty":"100 g"}],"instructions":["Step 1","Step 2"],"prepTimeMinutes":15}. No markdown.' },
-                { inlineData: { mimeType: 'image/jpeg', data: base64.split(',')[1] } },
-              ],
-            }],
-          }),
-        }
-      );
-      const data = await response.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+      const prompt = 'Extract the recipe from this image. Return ONLY valid JSON: {"name":"Recipe Name","ingredients":[{"name":"Onion","qty":"100 g"}],"instructions":["Step 1","Step 2"],"prepTimeMinutes":15}. No markdown.';
+      const text = await extractWithAI(prompt, base64.split(',')[1], 'image/jpeg');
       const cleaned = text.replace(/```json\n?/g, '').replace(/```/g, '').trim();
       const parsed = JSON.parse(cleaned);
       if (parsed.name) setName(parsed.name);
@@ -125,59 +98,21 @@ const RecipeBuilder = ({ onClose, recipe: editRecipe }: RecipeBuilderProps) => {
     }
   };
 
-  // ─── YouTube / Instagram URL extraction ───
   const extractFromVideoUrl = async () => {
     if (!videoUrl.trim()) return;
     setIsExtractingUrl(true);
     setExtractionStatus('🎬 AI analyzing video recipe...');
     try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-      if (!apiKey) {
-        setTimeout(() => {
-          setName('Masala Dosa (from video)');
-          setIngredients([
-            { name: 'Dosa Batter', qty: '200 g' }, { name: 'Potato', qty: '150 g' },
-            { name: 'Onions', qty: '50 g' }, { name: 'Mustard Seeds', qty: '1 tsp' },
-            { name: 'Turmeric Powder', qty: '1 tsp' }, { name: 'Green Chilies', qty: '2 pcs' },
-          ]);
-          setInstructions([
-            'Boil potatoes, mash coarsely.',
-            'Temper mustard seeds, add onions and turmeric. Add potato.',
-            'Pour dosa batter on hot tawa, spread thin.',
-            'Add potato filling, fold and serve crispy.',
-          ]);
-          setPrepTime('25');
-          setIsExtractingUrl(false);
-          setExtractionStatus('✅ Recipe extracted from video!');
-        }, 2000);
-        return;
-      }
-
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                {
-                  text: `This is a recipe video URL: ${videoUrl}
+      const prompt = `This is a recipe video URL: ${videoUrl}
 
 Based on this URL (it's a YouTube or Instagram recipe video), extract the recipe details. Use your knowledge of popular recipe videos and the URL title/metadata to determine the recipe.
 
 Return ONLY valid JSON in this exact format:
 {"name":"Recipe Name","ingredients":[{"name":"Ingredient","qty":"100 g"}],"instructions":["Step 1","Step 2","Step 3"],"prepTimeMinutes":20,"tags":["Spicy"]}
 
-Tags should be from: Spicy, Sweet, Light, Balanced. No markdown, just raw JSON.`
-                },
-              ],
-            }],
-          }),
-        }
-      );
-      const data = await response.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+Tags should be from: Spicy, Sweet, Light, Balanced. No markdown, just raw JSON.`;
+
+      const text = await extractWithAI(prompt);
       const cleaned = text.replace(/```json\n?/g, '').replace(/```/g, '').trim();
       const parsed = JSON.parse(cleaned);
       if (parsed.name) setName(parsed.name);

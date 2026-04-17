@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNutriMom } from '@/context/NutriMomContext';
+import { useMealPlanner } from '@/context/MealPlannerContext';
 import { MEAL_SLOT_CONFIG } from '@/lib/types';
 import type { MealSlot, FlavorTag, HealthTag, RecipeIngredient, RecipeInstruction, NutritionInfo, VideoLink, Language } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -24,7 +24,7 @@ const HEALTH_TAGS: { id: HealthTag; label: string }[] = [
 ];
 
 const RecipeForm = ({ onClose, videoData }: RecipeFormProps) => {
-  const { cuisines, addRecipe } = useNutriMom();
+  const { cuisines, addRecipe } = useMealPlanner();
   const activeCuisines = cuisines.filter(c => c.isActive);
   const [step, setStep] = useState(0);
 

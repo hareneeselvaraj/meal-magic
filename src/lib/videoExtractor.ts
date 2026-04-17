@@ -460,19 +460,10 @@ async function extractFromInstagram(
   // 2. Extract the reel ID to include in the prompt
   const reelId = parsedVideo.id;
 
-  // 3. Call Gemini AI with all available context
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (apiKey) {
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: `I need to extract a recipe from this Instagram reel: ${parsedVideo.canonicalUrl}
+  // 3. Call AI with all available context (uses Gemini or Groq with key rotation)
+  try {
+    const { extractWithAI } = await import('./aiFetcher');
+    const prompt = `I need to extract a recipe from this Instagram reel: ${parsedVideo.canonicalUrl}
 
 Reel ID: ${reelId}
 ${title ? `Title/info: ${title}` : ''}
@@ -485,51 +476,45 @@ This Instagram cooking video may show ingredients and measurements as on-screen 
 4. Estimate prep time in minutes
 
 Return ONLY a raw JSON object (no markdown, no code fences):
-{"name":"Recipe Name","ingredients":[{"name":"Ingredient","quantity":"2","unit":"tbsp"}],"steps":[{"stepNumber":1,"text":"Step description"}],"prepTimeMinutes":30}`
-              }],
-            }],
-          }),
-        }
-      );
-      const data = await response.json();
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      if (rawText) {
-        // Strip markdown code fences if present
-        const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-        // Find first { to handle any prefix text
-        const jsonStart = cleaned.indexOf('{');
-        const jsonEnd = cleaned.lastIndexOf('}');
-        if (jsonStart !== -1 && jsonEnd !== -1) {
-          const parsed = JSON.parse(cleaned.substring(jsonStart, jsonEnd + 1));
-          if (parsed.name && (parsed.ingredients?.length > 0 || parsed.steps?.length > 0)) {
-            return {
-              success: true,
-              recipe: {
-                title: parsed.name,
-                titleTamil: '',
-                thumbnailUrl: '',
-                channelName: title || '',
-                ingredients: (parsed.ingredients || []).map((i: any) => ({
-                  name: String(i.name || '').trim(),
-                  quantity: String(i.quantity || ''),
-                  unit: String(i.unit || ''),
-                })),
-                steps: (parsed.steps || []).map((s: any, idx: number) => ({
-                  stepNumber: s.stepNumber || idx + 1,
-                  text: String(s.text || '').trim(),
-                })),
-                videoUrl: url,
-                platform: 'instagram',
-                language: videoLanguage,
-                rawTranscript: description,
-              },
-            };
-          }
+{"name":"Recipe Name","ingredients":[{"name":"Ingredient","quantity":"2","unit":"tbsp"}],"steps":[{"stepNumber":1,"text":"Step description"}],"prepTimeMinutes":30}`;
+
+    const rawText = await extractWithAI(prompt);
+    if (rawText) {
+      // Strip markdown code fences if present
+      const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+      // Find first { to handle any prefix text
+      const jsonStart = cleaned.indexOf('{');
+      const jsonEnd = cleaned.lastIndexOf('}');
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        const parsed = JSON.parse(cleaned.substring(jsonStart, jsonEnd + 1));
+        if (parsed.name && (parsed.ingredients?.length > 0 || parsed.steps?.length > 0)) {
+          return {
+            success: true,
+            recipe: {
+              title: parsed.name,
+              titleTamil: '',
+              thumbnailUrl: '',
+              channelName: title || '',
+              ingredients: (parsed.ingredients || []).map((i: any) => ({
+                name: String(i.name || '').trim(),
+                quantity: String(i.quantity || ''),
+                unit: String(i.unit || ''),
+              })),
+              steps: (parsed.steps || []).map((s: any, idx: number) => ({
+                stepNumber: s.stepNumber || idx + 1,
+                text: String(s.text || '').trim(),
+              })),
+              videoUrl: url,
+              platform: 'instagram',
+              language: videoLanguage,
+              rawTranscript: description,
+            },
+          };
         }
       }
-    } catch (e) {
-      console.warn('Gemini extraction failed for Instagram:', e);
     }
+  } catch (e) {
+    console.warn('AI extraction failed for Instagram:', e);
   }
 
   // 3. Fallback: try template matching from description
@@ -612,19 +597,71 @@ export async function extractRecipeFromVideo(
     // 2. Try to extract captions from YouTube page
     const pageData = await tryExtractCaptions(videoId);
     if (pageData.title && !title) title = pageData.title;
+    const rawTranscript = pageData.transcript;
 
+    // 3. PRIMARY: Use AI to extract recipe from ALL available context
+    //    This handles: ingredients in description, spoken in audio (via captions), or in title
     let ingredients: ExtractedRecipe['ingredients'] = [];
     let steps: ExtractedRecipe['steps'] = [];
-    let rawTranscript = pageData.transcript;
+    let aiTitle = '';
 
-    // 3. If we got a transcript, parse it
-    if (rawTranscript) {
-      const parsed = parseTranscript(rawTranscript, pageData.description);
-      ingredients = parsed.ingredients;
-      steps = parsed.steps;
+    try {
+      const { extractWithAI } = await import('./aiFetcher');
+
+      // Build a rich context string for the AI
+      const contextParts: string[] = [];
+      if (title) contextParts.push(`Video Title: ${title}`);
+      if (channelName) contextParts.push(`Channel: ${channelName}`);
+      if (pageData.description) contextParts.push(`Video Description:\n${pageData.description.slice(0, 3000)}`);
+      if (rawTranscript) contextParts.push(`Video Transcript/Captions:\n${rawTranscript.slice(0, 4000)}`);
+
+      const prompt = `Extract a complete cooking recipe from this YouTube video information:
+
+${contextParts.join('\n\n')}
+
+Analyze ALL the information above — the title, description, and transcript/captions. Ingredients may appear in ANY of these: written in the description, spoken in the video (captured in transcript), or implied by the title.
+
+Return ONLY a raw JSON object (no markdown, no code fences):
+{"name":"Recipe Name","ingredients":[{"name":"Ingredient","quantity":"2","unit":"tbsp"}],"steps":[{"stepNumber":1,"text":"Step description"}],"prepTimeMinutes":30}
+
+Be thorough — extract every ingredient mentioned with accurate quantities. If quantities aren't mentioned, estimate reasonable amounts. Write clear step-by-step instructions.`;
+
+      const rawText = await extractWithAI(prompt);
+      if (rawText) {
+        const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+        const jsonStart = cleaned.indexOf('{');
+        const jsonEnd = cleaned.lastIndexOf('}');
+        if (jsonStart !== -1 && jsonEnd !== -1) {
+          const parsed = JSON.parse(cleaned.substring(jsonStart, jsonEnd + 1));
+          if (parsed.name) aiTitle = parsed.name;
+          if (parsed.ingredients?.length > 0) {
+            ingredients = parsed.ingredients.map((i: any) => ({
+              name: String(i.name || '').trim(),
+              quantity: String(i.quantity || ''),
+              unit: String(i.unit || ''),
+            }));
+          }
+          if (parsed.steps?.length > 0) {
+            steps = parsed.steps.map((s: any, idx: number) => ({
+              stepNumber: s.stepNumber || idx + 1,
+              text: String(s.text || '').trim(),
+            }));
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('AI extraction failed for YouTube, falling back to parsing:', e);
     }
 
-    // 4. If no data from transcript, try recipe template matching
+    // 4. FALLBACK: If AI didn't work, try transcript parsing + template matching
+    if (ingredients.length === 0 && steps.length === 0) {
+      if (rawTranscript) {
+        const parsed = parseTranscript(rawTranscript, pageData.description);
+        ingredients = parsed.ingredients;
+        steps = parsed.steps;
+      }
+    }
+
     if (ingredients.length === 0 && steps.length === 0) {
       const template = matchRecipeTemplate(title);
       if (template) {
@@ -634,14 +671,16 @@ export async function extractRecipeFromVideo(
       }
     }
 
-    // 5. Clean title — pick the most descriptive segment
-    let cleanTitle = title;
-    const titleParts = title.split('|').map(p => p.trim());
-    if (titleParts.length > 1) {
-      const recipePart = titleParts.find(p =>
-        /biryani|biriyani|curry|masala|chicken|mutton|rice|dosa|idli|paneer|butter|sambar/i.test(p)
-      );
-      cleanTitle = recipePart || titleParts.reduce((a, b) => a.length > b.length ? a : b);
+    // 5. Clean title — use AI title if available, otherwise clean original
+    let cleanTitle = aiTitle || title;
+    if (!aiTitle) {
+      const titleParts = title.split('|').map(p => p.trim());
+      if (titleParts.length > 1) {
+        const recipePart = titleParts.find(p =>
+          /biryani|biriyani|curry|masala|chicken|mutton|rice|dosa|idli|paneer|butter|sambar/i.test(p)
+        );
+        cleanTitle = recipePart || titleParts.reduce((a, b) => a.length > b.length ? a : b);
+      }
     }
     cleanTitle = cleanTitle
       .replace(/@\S+/g, '')

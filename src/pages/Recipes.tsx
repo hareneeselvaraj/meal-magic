@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useNutriMom } from '@/context/NutriMomContext';
+import { useMealPlanner } from '@/context/MealPlannerContext';
 import { MEAL_SLOT_CONFIG } from '@/lib/types';
 import type { MealSlot, Recipe, VideoLink, Language } from '@/lib/types';
 import GlassCard from '@/components/GlassCard';
@@ -22,7 +22,7 @@ interface RecipesProps {
 }
 
 const Recipes = ({ onOpenRecipeForm, initialCuisineId, onCuisineChange }: RecipesProps) => {
-  const { recipes, cuisines, addCuisine, updateCuisine, deleteCuisine, updateRecipe } = useNutriMom();
+  const { recipes, cuisines, addCuisine, updateCuisine, deleteCuisine, updateRecipe } = useMealPlanner();
 
   // Navigation: null = cuisine grid, string = selected cuisine id
   const [selectedCuisine, setSelectedCuisineLocal] = useState<string | null>(initialCuisineId ?? null);

@@ -1,12 +1,12 @@
 /**
  * Google Drive Sync — backup/restore to AppData folder
- * Stores a single JSON file (nutrimom-backup.json) in the app's hidden folder.
+ * Stores a single JSON file (meal-planner-backup.json) in the app's hidden folder.
  */
 
 import { getToken } from './driveAuth';
 import { readAll, writeAll } from './db';
 
-const FILE_NAME = 'nutrimom-backup.json';
+const FILE_NAME = 'meal-planner-backup.json';
 const UPLOAD_URL = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
 const LIST_URL = `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D'${FILE_NAME}'`;
 
@@ -33,14 +33,14 @@ export async function backupToDrive(): Promise<void> {
     groceryItems: await readAll('groceryItems'),
     groceryCategories: await readAll('groceryCategories'),
     // Also backup localStorage data
-    nm_recipes: JSON.parse(localStorage.getItem('nm_recipes') || '[]'),
-    nm_mealPlans: JSON.parse(localStorage.getItem('nm_mealPlans') || '{}'),
-    nm_cuisines: JSON.parse(localStorage.getItem('nm_cuisines') || '[]'),
-    nm_profile: JSON.parse(localStorage.getItem('nm_profile') || '{}'),
+    mp_recipes: JSON.parse(localStorage.getItem('mp_recipes') || '[]'),
+    mp_mealPlans: JSON.parse(localStorage.getItem('mp_mealPlans') || '{}'),
+    mp_cuisines: JSON.parse(localStorage.getItem('mp_cuisines') || '[]'),
+    mp_profile: JSON.parse(localStorage.getItem('mp_profile') || '{}'),
   };
 
   const metadata = { name: FILE_NAME, parents: ['appDataFolder'] };
-  const boundary = '-------nutrimom-' + Date.now();
+  const boundary = '-------mealplanner-' + Date.now();
   const body =
     `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n` +
     JSON.stringify(metadata) +
@@ -85,10 +85,10 @@ export async function restoreFromDrive(): Promise<boolean> {
   if (data.groceryCategories?.length) await writeAll('groceryCategories', data.groceryCategories);
 
   // Restore localStorage data
-  if (data.nm_recipes) localStorage.setItem('nm_recipes', JSON.stringify(data.nm_recipes));
-  if (data.nm_mealPlans) localStorage.setItem('nm_mealPlans', JSON.stringify(data.nm_mealPlans));
-  if (data.nm_cuisines) localStorage.setItem('nm_cuisines', JSON.stringify(data.nm_cuisines));
-  if (data.nm_profile) localStorage.setItem('nm_profile', JSON.stringify(data.nm_profile));
+  if (data.mp_recipes) localStorage.setItem('mp_recipes', JSON.stringify(data.mp_recipes));
+  if (data.mp_mealPlans) localStorage.setItem('mp_mealPlans', JSON.stringify(data.mp_mealPlans));
+  if (data.mp_cuisines) localStorage.setItem('mp_cuisines', JSON.stringify(data.mp_cuisines));
+  if (data.mp_profile) localStorage.setItem('mp_profile', JSON.stringify(data.mp_profile));
 
   localStorage.setItem('drive-last-sync', new Date().toISOString());
   return true;

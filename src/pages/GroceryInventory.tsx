@@ -3,7 +3,7 @@ import { Search, Plus, ArrowLeft, Trash2, Pencil, FolderPlus, ScanLine, Loader2,
 import GlassCard from '@/components/GlassCard';
 import StatusBadge from '@/components/StatusBadge';
 import { useGrocery } from '@/context/GroceryContext';
-import { useNutriMom } from '@/context/NutriMomContext';
+import { useMealPlanner } from '@/context/MealPlannerContext';
 import { type GroceryItemData, type GroceryCategory } from '@/data/mockData';
 import {
   Dialog,
@@ -46,7 +46,7 @@ const statusBorderColor: Record<string, string> = {
 
 const GroceryInventory = () => {
   const { items, addItem, updateItem, deleteItem, categories, addCategory, updateCategory, deleteCategory, bulkAddItems } = useGrocery();
-  const { mealPlans, recipes } = useNutriMom();
+  const { mealPlans, recipes } = useMealPlanner();
 
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [search, setSearch] = useState('');

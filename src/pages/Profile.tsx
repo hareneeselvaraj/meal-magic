@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNutriMom } from '@/context/NutriMomContext';
+import { useMealPlanner } from '@/context/MealPlannerContext';
 import type { ProfileType } from '@/lib/types';
 import GlassCard from '@/components/GlassCard';
 import { cn } from '@/lib/utils';
@@ -17,7 +17,7 @@ const DEFICIENCY_OPTIONS = [
 ];
 
 const Profile = () => {
-  const { activeProfile, setActiveProfile } = useNutriMom();
+  const { activeProfile, setActiveProfile } = useMealPlanner();
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(activeProfile.displayName);
   const [editType, setEditType] = useState<ProfileType>(activeProfile.profileType);
