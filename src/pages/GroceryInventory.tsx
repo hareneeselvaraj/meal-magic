@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Search, Plus, ArrowLeft, Trash2, Pencil, FolderPlus, ScanLine, Loader2, Check, X, ShoppingBag, Download } from 'lucide-react';
+import { Search, Plus, ArrowLeft, Trash2, Pencil, FolderPlus, ScanLine, Loader2, Check, X, ShoppingBag, Download, Mic } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import StatusBadge from '@/components/StatusBadge';
 import { useGrocery } from '@/context/GroceryContext';
@@ -15,11 +15,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { parseBillText, type ParsedBillItem } from '@/lib/billParser';
+import { parseBillText, type ParsedBillItem, categorizeItemSync, categorizeItemSmart } from '@/lib/billParser';
 import { extractTextFromPdf } from '@/lib/pdfExtractor';
 import Tesseract from 'tesseract.js';
 import { buildShoppingList } from '@/lib/shoppingList';
 import { downloadSmartShoppingListPDF } from '@/lib/groceryPdfGenerator';
+import { shareShoppingList } from '@/lib/shareUtils';
+import { startVoiceInput } from '@/lib/voiceInput';
+import SpendingSummary from '@/components/SpendingSummary';
 
 
 
@@ -44,8 +47,15 @@ const statusBorderColor: Record<string, string> = {
   missing: 'border-red-200/60',
 };
 
-const GroceryInventory = () => {
-  const { items, addItem, updateItem, deleteItem, categories, addCategory, updateCategory, deleteCategory, bulkAddItems } = useGrocery();
+interface GroceryInventoryProps {
+  openAddModal?: boolean;
+  onCloseAddModal?: () => void;
+  initialScanFile?: File | null;
+  onScanFileConsumed?: () => void;
+}
+
+const GroceryInventory = ({ openAddModal, onCloseAddModal, initialScanFile, onScanFileConsumed }: GroceryInventoryProps = {}) => {
+  const { items, addItem, updateItem, deleteItem, categories, addCategory, updateCategory, deleteCategory, bulkAddItems, addBill } = useGrocery();
   const { mealPlans, recipes } = useMealPlanner();
 
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -61,6 +71,92 @@ const GroceryInventory = () => {
   const [editQty, setEditQty] = useState('');
   const [editName, setEditName] = useState('');
   const [editUnit, setEditUnit] = useState('');
+
+  const [isCategorizing, setIsCategorizing] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceCategorized, setVoiceCategorized] = useState(false);
+
+  const handleVoiceInput = () => {
+    setIsListening(true);
+    setVoiceCategorized(false);
+    startVoiceInput(
+      async (text) => {
+         setIsListening(false);
+         // Parse qty/unit/name from spoken text
+         const match = text.match(/([\d.]+)\s*(g|gm|kg|kgs|ml|l|ltr|pcs|pack|pkt)\s*(.*)/i) || text.match(/(.*)\s+([\d.]+)\s*(g|gm|kg|kgs|ml|l|ltr|pcs|pack|pkt)/i);
+         let parsedName = text;
+         if (match) {
+           if (parseFloat(match[1])) {
+             setNewQty(match[1]); setNewUnit(match[2].toLowerCase()); parsedName = match[3].trim();
+           } else {
+             parsedName = match[1].trim(); setNewQty(match[2]); setNewUnit(match[3].toLowerCase());
+           }
+         }
+         setNewName(parsedName);
+
+         // Immediately auto-categorize the parsed item name
+         const syncCat = categorizeItemSync(parsedName);
+         if (syncCat) {
+           setNewCategory(syncCat);
+           setVoiceCategorized(true);
+         } else {
+           // Fallback to AI categorization
+           setIsCategorizing(true);
+           try {
+             const smartCat = await categorizeItemSmart(parsedName);
+             setNewCategory(smartCat);
+             setVoiceCategorized(true);
+           } catch { /* ignore */ }
+           setIsCategorizing(false);
+         }
+      },
+      (err) => { 
+        setIsListening(false); 
+        alert("Voice error: " + err); 
+      }
+    );
+  };
+
+  useEffect(() => {
+    if (openAddModal) {
+      setShowAdd(true);
+    }
+  }, [openAddModal]);
+
+  useEffect(() => {
+    if (!showAdd && openAddModal && onCloseAddModal) {
+      onCloseAddModal();
+    }
+  }, [showAdd, openAddModal, onCloseAddModal]);
+
+  useEffect(() => {
+    if (initialScanFile) {
+      handleScanBill(initialScanFile);
+      if (onScanFileConsumed) onScanFileConsumed();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialScanFile]);
+
+  useEffect(() => {
+    if (!newName.trim() || !showAdd) return;
+    
+    // Check keywords first
+    const syncMatch = categorizeItemSync(newName);
+    if (syncMatch) {
+      setNewCategory(syncMatch);
+      setIsCategorizing(false);
+      return;
+    }
+    
+    // Fallback to AI (debounced)
+    setIsCategorizing(true);
+    const timer = setTimeout(async () => {
+      const suggested = await categorizeItemSmart(newName);
+      setNewCategory(suggested);
+      setIsCategorizing(false);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [newName, showAdd]);
 
   const [showAddCat, setShowAddCat] = useState(false);
   const [editingCat, setEditingCat] = useState<GroceryCategory | null>(null);
@@ -114,7 +210,7 @@ const GroceryInventory = () => {
   const handleAddItem = () => {
     if (!newName.trim()) return;
     addItem({ name: newName.trim(), quantity: parseFloat(newQty) || 0, unit: newUnit || 'pcs', category: newCategory || activeCategory || categories[0]?.id, status: 'available' });
-    setShowAdd(false); setNewName(''); setNewQty(''); setNewUnit(''); setNewCategory('');
+    setShowAdd(false); setNewName(''); setNewQty(''); setNewUnit(''); setNewCategory(''); setVoiceCategorized(false);
   };
 
   const openEditItem = (item: GroceryItemData) => {
@@ -194,6 +290,18 @@ const GroceryInventory = () => {
         status: 'available' as const,
       }));
     bulkAddItems(toImport);
+    
+    if (parsedItems.length > 0) {
+      const total = parsedItems.reduce((sum, item) => sum + (item.price || 0), 0);
+      addBill({
+        date: new Date().toISOString(),
+        source: 'Grocery Bill',
+        items: parsedItems,
+        total,
+        imageUrl: billPreview || undefined
+      });
+    }
+
     setShowScanDialog(false);
     setParsedItems([]);
     setSelectedItems(new Set());
@@ -214,6 +322,7 @@ const GroceryInventory = () => {
   if (!activeCategory) {
     return (
       <div className="space-y-1 -mt-2">
+        <SpendingSummary />
 
         {/* Premium Header Banner */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 p-5 mb-4 shadow-lg">
@@ -401,7 +510,13 @@ const GroceryInventory = () => {
                 </div>
               )}
               {shoppingList.length > 0 && (
-                <div className="pt-2 sticky bottom-0 bg-white border-t border-gray-100 pb-2">
+                <div className="pt-2 sticky bottom-0 bg-white border-t border-gray-100 pb-2 space-y-2">
+                  <button
+                    onClick={() => shareShoppingList(shoppingList)}
+                    className="w-full py-2.5 rounded-xl bg-[#25D366] text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-95"
+                  >
+                    Share via WhatsApp
+                  </button>
                   <button
                     onClick={() => downloadSmartShoppingListPDF(shoppingList)}
                     className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-95"
@@ -514,14 +629,28 @@ const GroceryInventory = () => {
           <DialogContent className="rounded-2xl">
             <DialogHeader><DialogTitle>Add Item</DialogTitle><DialogDescription>Add an item to your grocery list</DialogDescription></DialogHeader>
             <div className="space-y-3">
-              <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Item name" />
+              <div className="flex gap-2">
+                <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Item name" className="flex-1" />
+                <Button type="button" onClick={handleVoiceInput} variant={isListening ? "default" : "outline"} className={cn("px-3 transition-colors", isListening && "bg-rose-500 hover:bg-rose-600 animate-pulse text-white")}>
+                  <Mic size={18} />
+                </Button>
+              </div>
               <div className="flex gap-2">
                 <Input value={newQty} onChange={(e) => setNewQty(e.target.value)} placeholder="Qty" type="number" className="flex-1" />
                 <Input value={newUnit} onChange={(e) => setNewUnit(e.target.value)} placeholder="Unit" className="flex-1" />
               </div>
-              <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200">
-                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+              <div className="relative">
+                <select value={newCategory} onChange={(e) => { setNewCategory(e.target.value); setVoiceCategorized(false); }} className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 appearance-none">
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+                {isCategorizing && <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-emerald-500" />}
+              </div>
+              {voiceCategorized && newCategory && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 animate-fade-in">
+                  <Check size={12} className="text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">Auto-categorized → {categories.find(c => c.id === newCategory)?.name || newCategory}</span>
+                </div>
+              )}
               <Button onClick={handleAddItem} disabled={!newName.trim()} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl">Add</Button>
             </div>
           </DialogContent>
@@ -641,11 +770,28 @@ const GroceryInventory = () => {
         <DialogContent className="rounded-2xl">
           <DialogHeader><DialogTitle>Add Item</DialogTitle><DialogDescription>Add a new item to {activeCategoryData?.name}</DialogDescription></DialogHeader>
           <div className="space-y-3">
-            <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Item name" />
+            <div className="flex gap-2">
+              <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Item name" className="flex-1" />
+              <Button type="button" onClick={handleVoiceInput} variant={isListening ? "default" : "outline"} className={cn("px-3 transition-colors", isListening && "bg-rose-500 hover:bg-rose-600 animate-pulse text-white")}>
+                <Mic size={18} />
+              </Button>
+            </div>
             <div className="flex gap-2">
               <Input value={newQty} onChange={(e) => setNewQty(e.target.value)} placeholder="Qty" type="number" className="flex-1" />
               <Input value={newUnit} onChange={(e) => setNewUnit(e.target.value)} placeholder="Unit" className="flex-1" />
             </div>
+            <div className="relative">
+              <select value={newCategory} onChange={(e) => { setNewCategory(e.target.value); setVoiceCategorized(false); }} className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 appearance-none">
+                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+              {isCategorizing && <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-emerald-500" />}
+            </div>
+            {voiceCategorized && newCategory && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 animate-fade-in">
+                <Check size={12} className="text-emerald-600 dark:text-emerald-400" />
+                <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">Auto-categorized → {categories.find(c => c.id === newCategory)?.name || newCategory}</span>
+              </div>
+            )}
             <Button onClick={handleAddItem} disabled={!newName.trim()} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl">Add</Button>
           </div>
         </DialogContent>

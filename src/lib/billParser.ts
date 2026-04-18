@@ -4,6 +4,7 @@
  * 
  * Handles BigBasket, JioMart, and similar Indian grocery invoice formats.
  */
+import { extractWithAI } from './aiFetcher';
 
 export interface ParsedBillItem {
   name: string;
@@ -113,16 +114,44 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
 };
 
 /**
- * Determine which category an item name belongs to.
+ * Determine which category an item name belongs to synchronously.
  */
-function categorizeItem(name: string): string {
+export function categorizeItemSync(name: string): string {
   const lower = name.toLowerCase();
   for (const [catId, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
     for (const kw of keywords) {
       if (lower.includes(kw)) return catId;
     }
   }
-  return 'rice'; // default
+  return '';
+}
+
+/**
+ * Legacy synchronous categorizer with default fallback.
+ */
+export function categorizeItem(name: string): string {
+  return categorizeItemSync(name) || 'rice';
+}
+
+/**
+ * Smart categorizer: uses keywords first, then falls back to Gemini API.
+ */
+export async function categorizeItemSmart(name: string): Promise<string> {
+  const match = categorizeItemSync(name);
+  if (match) return match;
+
+  try {
+    const prompt = `Categorize this grocery item for an Indian household: "${name}". Return ONLY ONE of the following precise words: vegetables, fruits, dairy, meat, rice, masalas, oils, cereals, drinks, icecream, chips, choco, biscuits, teacoffee, sauces, sweets, noodles, frozen, dryfruits, paan, other. Return nothing else.`;
+    const res = await extractWithAI(prompt);
+    const cat = res.trim().toLowerCase().replace(/[^a-z]/g, '');
+    if (Object.keys(CATEGORY_KEYWORDS).includes(cat)) {
+      return cat;
+    }
+    return 'rice'; // Fallback
+  } catch (e) {
+    console.error('AI Category fallback failed:', e);
+    return 'rice'; // Absolute fallback
+  }
 }
 
 /**

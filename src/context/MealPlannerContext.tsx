@@ -42,6 +42,9 @@ const defaultProfile: UserProfile = {
   age: 25,
   deficiencies: ['iron', 'vitamin_d'],
   preferredLanguage: 'en',
+  preferredCuisines: [],
+  spiceLevel: 'medium',
+  isVegetarian: false,
   createdAt: new Date(),
   updatedAt: new Date(),
 };

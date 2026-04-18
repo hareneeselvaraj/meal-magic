@@ -22,7 +22,7 @@ interface RecipesProps {
 }
 
 const Recipes = ({ onOpenRecipeForm, initialCuisineId, onCuisineChange }: RecipesProps) => {
-  const { recipes, cuisines, addCuisine, updateCuisine, deleteCuisine, updateRecipe } = useMealPlanner();
+  const { recipes, cuisines, addCuisine, updateCuisine, deleteCuisine, updateRecipe, activeProfile } = useMealPlanner();
 
   // Navigation: null = cuisine grid, string = selected cuisine id
   const [selectedCuisine, setSelectedCuisineLocal] = useState<string | null>(initialCuisineId ?? null);
@@ -54,11 +54,18 @@ const Recipes = ({ onOpenRecipeForm, initialCuisineId, onCuisineChange }: Recipe
   // PDF language popup
   const [pdfRecipe, setPdfRecipe] = useState<Recipe | null>(null);
 
-  const activeCuisines = cuisines.filter(c => c.isActive);
+  const activeCuisines = cuisines.filter(c => 
+    c.isActive && (activeProfile.preferredCuisines?.length ? activeProfile.preferredCuisines.includes(c.id) : true)
+  );
 
   const filteredRecipes = useMemo(() => {
     if (!selectedCuisine) return [];
+    const meatKeywords = ['chicken', 'mutton', 'beef', 'pork', 'fish', 'prawn', 'egg', 'meat', 'lamb', 'seafood'];
     return recipes.filter(r => {
+      if (activeProfile.isVegetarian) {
+        const hasMeat = r.ingredients.some(ing => meatKeywords.some(mk => ing.name.toLowerCase().includes(mk)));
+        if (hasMeat) return false;
+      }
       if (r.cuisineId !== selectedCuisine) return false;
       if (selectedSlot && r.mealSlot !== selectedSlot) return false;
       if (searchQuery) {
@@ -67,7 +74,7 @@ const Recipes = ({ onOpenRecipeForm, initialCuisineId, onCuisineChange }: Recipe
       }
       return true;
     });
-  }, [recipes, selectedCuisine, selectedSlot, searchQuery]);
+  }, [recipes, selectedCuisine, selectedSlot, searchQuery, activeProfile.isVegetarian]);
 
   const getRecipeCount = (cuisineId: string) => recipes.filter(r => r.cuisineId === cuisineId).length;
 
@@ -194,9 +201,17 @@ const Recipes = ({ onOpenRecipeForm, initialCuisineId, onCuisineChange }: Recipe
                 ))}
               </div>
             </div>
-            <button className="shrink-0 mt-1">
-              {isExpanded ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
-            </button>
+            <div className="flex flex-col items-center gap-2 mt-0.5 shrink-0">
+              <button 
+                onClick={(e) => { e.stopPropagation(); updateRecipe(recipe.id, { isFavourite: !recipe.isFavourite }); }}
+                className={cn("p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors", recipe.isFavourite ? "text-rose-500" : "text-gray-300 hover:text-gray-400")}
+              >
+                <Heart size={16} className={recipe.isFavourite ? "fill-current" : ""} />
+              </button>
+              <button className="">
+                {isExpanded ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+              </button>
+            </div>
           </div>
         </div>
 

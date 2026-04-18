@@ -357,10 +357,15 @@ export function downloadRecipePDF(recipe: Recipe, language: PDFLanguage = 'en') 
 
   <!-- Print button (hidden when printing) -->
   <div class="no-print" style="text-align:center;padding:20px;position:sticky;bottom:0;background:#fff;border-top:1px solid #eee">
-    <button onclick="window.print()" style="padding:12px 40px;border-radius:12px;border:none;background:linear-gradient(135deg,#10b981,#0d9488);color:#fff;font-size:14px;font-weight:600;cursor:pointer">
-      📥 ${isEn ? 'Save as PDF' : 'PDF ஆக சேமி'}
-    </button>
-    <p style="font-size:11px;color:#999;margin-top:8px">${isEn ? 'Use "Save as PDF" in the print dialog' : 'Print உரையாடலில் "Save as PDF" என்பதைத் தேர்ந்தெடுக்கவும்'}</p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-bottom:8px">
+      <button onclick="window.close(); window.history.back();" style="padding:12px 24px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;color:#666;font-size:14px;font-weight:600;cursor:pointer">
+        ⬅ ${isEn ? 'Back' : 'பின்செல்'}
+      </button>
+      <button onclick="window.print()" style="padding:12px 40px;border-radius:12px;border:none;background:linear-gradient(135deg,#10b981,#0d9488);color:#fff;font-size:14px;font-weight:600;cursor:pointer">
+        📥 ${isEn ? 'Save as PDF' : 'PDF ஆக சேமி'}
+      </button>
+    </div>
+    <p style="font-size:11px;color:#999;">${isEn ? 'Use "Save as PDF" in the print dialog' : 'Print உரையாடலில் "Save as PDF" என்பதைத் தேர்ந்தெடுக்கவும்'}</p>
   </div>
 </body>
 </html>`;

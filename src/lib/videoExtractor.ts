@@ -252,6 +252,264 @@ const RECIPE_TEMPLATES: Record<string, {
   },
 };
 
+// ── Additional Recipe Templates ──────────────────────────────────
+const MORE_TEMPLATES: typeof RECIPE_TEMPLATES = {
+  'dal_tadka': {
+    keywords: ['dal', 'dal fry', 'dal tadka', 'toor dal', 'yellow dal', 'masoor dal'],
+    ingredients: [
+      { name: 'Toor Dal / Masoor Dal', quantity: '1', unit: 'cup' },
+      { name: 'Onion (chopped)', quantity: '1', unit: 'medium' },
+      { name: 'Tomato (chopped)', quantity: '1', unit: 'medium' },
+      { name: 'Green Chilies', quantity: '2', unit: 'nos' },
+      { name: 'Garlic (chopped)', quantity: '4', unit: 'cloves' },
+      { name: 'Turmeric Powder', quantity: '0.5', unit: 'tsp' },
+      { name: 'Red Chili Powder', quantity: '1', unit: 'tsp' },
+      { name: 'Cumin Seeds', quantity: '1', unit: 'tsp' },
+      { name: 'Mustard Seeds', quantity: '0.5', unit: 'tsp' },
+      { name: 'Curry Leaves', quantity: '8', unit: 'leaves' },
+      { name: 'Ghee', quantity: '2', unit: 'tbsp' },
+      { name: 'Salt', quantity: 'to taste', unit: '' },
+      { name: 'Coriander Leaves', quantity: 'for garnish', unit: '' },
+    ],
+    steps: [
+      { stepNumber: 1, text: 'Wash and pressure cook dal with turmeric and salt for 3-4 whistles until soft. Mash well.' },
+      { stepNumber: 2, text: 'Heat ghee in a pan. Add cumin seeds, mustard seeds, curry leaves, and chopped garlic. Sauté until golden.' },
+      { stepNumber: 3, text: 'Add chopped onions and green chilies. Cook until onions turn translucent.' },
+      { stepNumber: 4, text: 'Add tomatoes and red chili powder. Cook until tomatoes are soft.' },
+      { stepNumber: 5, text: 'Pour the tempering over the cooked dal. Mix well, simmer for 5 minutes. Garnish with coriander and serve with rice.' },
+    ],
+  },
+  'rasam': {
+    keywords: ['rasam', 'pepper rasam', 'tomato rasam', 'lemon rasam'],
+    ingredients: [
+      { name: 'Toor Dal (cooked)', quantity: '0.5', unit: 'cup' },
+      { name: 'Tomato', quantity: '2', unit: 'medium' },
+      { name: 'Tamarind', quantity: '1', unit: 'small piece' },
+      { name: 'Rasam Powder', quantity: '1.5', unit: 'tbsp' },
+      { name: 'Turmeric Powder', quantity: '0.25', unit: 'tsp' },
+      { name: 'Mustard Seeds', quantity: '1', unit: 'tsp' },
+      { name: 'Cumin Seeds', quantity: '0.5', unit: 'tsp' },
+      { name: 'Curry Leaves', quantity: '10', unit: 'leaves' },
+      { name: 'Garlic (crushed)', quantity: '3', unit: 'cloves' },
+      { name: 'Coriander Leaves', quantity: 'for garnish', unit: '' },
+      { name: 'Oil / Ghee', quantity: '1', unit: 'tbsp' },
+      { name: 'Salt', quantity: 'to taste', unit: '' },
+    ],
+    steps: [
+      { stepNumber: 1, text: 'Soak tamarind in warm water, extract juice. Chop tomatoes.' },
+      { stepNumber: 2, text: 'Boil tamarind water with tomatoes, turmeric, rasam powder, and salt.' },
+      { stepNumber: 3, text: 'Add mashed dal and simmer for 10 minutes until frothy.' },
+      { stepNumber: 4, text: 'Temper with mustard seeds, cumin, garlic, and curry leaves. Add to rasam. Garnish with coriander and serve.' },
+    ],
+  },
+  'upma': {
+    keywords: ['upma', 'rava upma', 'sooji upma', 'semolina upma'],
+    ingredients: [
+      { name: 'Rava / Semolina', quantity: '1', unit: 'cup' },
+      { name: 'Onion (chopped)', quantity: '1', unit: 'medium' },
+      { name: 'Green Chilies', quantity: '2', unit: 'nos' },
+      { name: 'Ginger (grated)', quantity: '1', unit: 'tsp' },
+      { name: 'Curry Leaves', quantity: '8', unit: 'leaves' },
+      { name: 'Mustard Seeds', quantity: '1', unit: 'tsp' },
+      { name: 'Urad Dal', quantity: '1', unit: 'tsp' },
+      { name: 'Chana Dal', quantity: '1', unit: 'tsp' },
+      { name: 'Cashews', quantity: '8', unit: 'nos' },
+      { name: 'Water', quantity: '2.5', unit: 'cups' },
+      { name: 'Oil / Ghee', quantity: '2', unit: 'tbsp' },
+      { name: 'Salt', quantity: 'to taste', unit: '' },
+      { name: 'Lemon Juice', quantity: '1', unit: 'tsp' },
+    ],
+    steps: [
+      { stepNumber: 1, text: 'Dry roast rava until light golden and fragrant. Set aside.' },
+      { stepNumber: 2, text: 'Heat oil. Add mustard seeds, urad dal, chana dal, cashews, curry leaves, and green chilies. Sauté.' },
+      { stepNumber: 3, text: 'Add chopped onion and ginger. Cook until translucent.' },
+      { stepNumber: 4, text: 'Add water and salt. Bring to a boil. Slowly add roasted rava while stirring continuously to avoid lumps.' },
+      { stepNumber: 5, text: 'Cook on low heat for 3-4 minutes until water is absorbed. Add lemon juice and serve hot.' },
+    ],
+  },
+  'poha': {
+    keywords: ['poha', 'pohe', 'flattened rice', 'aval', 'beaten rice'],
+    ingredients: [
+      { name: 'Poha (thick)', quantity: '2', unit: 'cups' },
+      { name: 'Onion (chopped)', quantity: '1', unit: 'medium' },
+      { name: 'Green Chilies', quantity: '2', unit: 'nos' },
+      { name: 'Peanuts', quantity: '2', unit: 'tbsp' },
+      { name: 'Mustard Seeds', quantity: '1', unit: 'tsp' },
+      { name: 'Curry Leaves', quantity: '8', unit: 'leaves' },
+      { name: 'Turmeric Powder', quantity: '0.25', unit: 'tsp' },
+      { name: 'Sugar', quantity: '1', unit: 'tsp' },
+      { name: 'Lemon Juice', quantity: '1', unit: 'tbsp' },
+      { name: 'Oil', quantity: '2', unit: 'tbsp' },
+      { name: 'Salt', quantity: 'to taste', unit: '' },
+      { name: 'Coriander Leaves', quantity: 'for garnish', unit: '' },
+    ],
+    steps: [
+      { stepNumber: 1, text: 'Rinse poha in water, drain immediately. Add turmeric, salt, and sugar. Mix gently.' },
+      { stepNumber: 2, text: 'Heat oil. Add mustard seeds, peanuts, curry leaves, and green chilies. Sauté until peanuts are golden.' },
+      { stepNumber: 3, text: 'Add onions and cook until soft. Add the soaked poha and toss gently.' },
+      { stepNumber: 4, text: 'Cook for 2-3 minutes. Add lemon juice, garnish with coriander and serve.' },
+    ],
+  },
+  'egg_curry': {
+    keywords: ['egg curry', 'egg masala', 'anda curry', 'egg gravy', 'boiled egg curry'],
+    ingredients: [
+      { name: 'Eggs (boiled)', quantity: '6', unit: 'nos' },
+      { name: 'Onions (chopped)', quantity: '2', unit: 'medium' },
+      { name: 'Tomatoes (chopped)', quantity: '2', unit: 'medium' },
+      { name: 'Ginger-Garlic Paste', quantity: '1', unit: 'tbsp' },
+      { name: 'Red Chili Powder', quantity: '1', unit: 'tsp' },
+      { name: 'Turmeric Powder', quantity: '0.5', unit: 'tsp' },
+      { name: 'Coriander Powder', quantity: '1', unit: 'tsp' },
+      { name: 'Garam Masala', quantity: '0.5', unit: 'tsp' },
+      { name: 'Oil', quantity: '3', unit: 'tbsp' },
+      { name: 'Salt', quantity: 'to taste', unit: '' },
+      { name: 'Coriander Leaves', quantity: 'for garnish', unit: '' },
+    ],
+    steps: [
+      { stepNumber: 1, text: 'Boil and peel eggs. Make slits for better absorption. Lightly fry in oil until golden. Set aside.' },
+      { stepNumber: 2, text: 'In the same oil, sauté onions until golden. Add ginger-garlic paste and cook 2 minutes.' },
+      { stepNumber: 3, text: 'Add tomatoes, turmeric, chili powder, and coriander powder. Cook until oil separates.' },
+      { stepNumber: 4, text: 'Add water to make gravy. Add eggs and garam masala. Simmer for 10 minutes. Garnish and serve with rice or roti.' },
+    ],
+  },
+  'fish_curry': {
+    keywords: ['fish curry', 'meen kulambu', 'fish masala', 'meen curry', 'fish gravy'],
+    ingredients: [
+      { name: 'Fish pieces', quantity: '500', unit: 'gm' },
+      { name: 'Onions (sliced)', quantity: '2', unit: 'medium' },
+      { name: 'Tomatoes', quantity: '2', unit: 'medium' },
+      { name: 'Tamarind extract', quantity: '2', unit: 'tbsp' },
+      { name: 'Red Chili Powder', quantity: '1.5', unit: 'tsp' },
+      { name: 'Turmeric Powder', quantity: '0.5', unit: 'tsp' },
+      { name: 'Coriander Powder', quantity: '1', unit: 'tsp' },
+      { name: 'Fenugreek Seeds', quantity: '0.5', unit: 'tsp' },
+      { name: 'Curry Leaves', quantity: '10', unit: 'leaves' },
+      { name: 'Coconut Oil', quantity: '3', unit: 'tbsp' },
+      { name: 'Salt', quantity: 'to taste', unit: '' },
+    ],
+    steps: [
+      { stepNumber: 1, text: 'Marinate fish with turmeric and salt. Set aside for 15 minutes.' },
+      { stepNumber: 2, text: 'Heat oil, add fenugreek seeds and curry leaves. Sauté onions until golden.' },
+      { stepNumber: 3, text: 'Add tomatoes, chili powder, coriander powder. Cook until mushy.' },
+      { stepNumber: 4, text: 'Add tamarind extract and water. Bring to a boil. Gently add fish pieces.' },
+      { stepNumber: 5, text: 'Simmer on low heat for 10-12 minutes. Do not stir, just swirl the pan. Serve with rice.' },
+    ],
+  },
+  'fried_rice': {
+    keywords: ['fried rice', 'veg fried rice', 'egg fried rice', 'chinese fried rice', 'schezwan fried rice'],
+    ingredients: [
+      { name: 'Cooked Rice (cooled)', quantity: '3', unit: 'cups' },
+      { name: 'Mixed Vegetables (diced)', quantity: '1', unit: 'cup' },
+      { name: 'Eggs', quantity: '2', unit: 'nos' },
+      { name: 'Spring Onions', quantity: '4', unit: 'stalks' },
+      { name: 'Garlic (minced)', quantity: '1', unit: 'tbsp' },
+      { name: 'Soy Sauce', quantity: '2', unit: 'tbsp' },
+      { name: 'Vinegar', quantity: '1', unit: 'tsp' },
+      { name: 'Pepper Powder', quantity: '0.5', unit: 'tsp' },
+      { name: 'Oil', quantity: '3', unit: 'tbsp' },
+      { name: 'Salt', quantity: 'to taste', unit: '' },
+    ],
+    steps: [
+      { stepNumber: 1, text: 'Heat oil on high heat. Scramble eggs, break into pieces, set aside.' },
+      { stepNumber: 2, text: 'Sauté garlic until fragrant. Add diced vegetables and stir-fry for 2-3 minutes.' },
+      { stepNumber: 3, text: 'Add cooled rice, toss on high heat. Add soy sauce, vinegar, pepper, and salt.' },
+      { stepNumber: 4, text: 'Add scrambled eggs back. Toss well. Garnish with spring onions and serve hot.' },
+    ],
+  },
+  'chapati': {
+    keywords: ['chapati', 'roti', 'phulka', 'wheat roti', 'soft chapati', 'soft roti'],
+    ingredients: [
+      { name: 'Wheat Flour', quantity: '2', unit: 'cups' },
+      { name: 'Water', quantity: 'as needed', unit: '' },
+      { name: 'Salt', quantity: '0.5', unit: 'tsp' },
+      { name: 'Oil / Ghee', quantity: '1', unit: 'tsp' },
+    ],
+    steps: [
+      { stepNumber: 1, text: 'Mix flour with salt. Gradually add water and knead into a soft, smooth dough. Rest for 15-20 minutes.' },
+      { stepNumber: 2, text: 'Divide into equal portions. Roll each into a thin circle using dry flour.' },
+      { stepNumber: 3, text: 'Heat a tawa/griddle. Place rolled chapati, cook until bubbles appear. Flip and cook the other side.' },
+      { stepNumber: 4, text: 'Place directly on flame to puff up (phulka). Apply ghee and serve hot.' },
+    ],
+  },
+  'paratha': {
+    keywords: ['paratha', 'aloo paratha', 'gobi paratha', 'stuffed paratha', 'laccha paratha'],
+    ingredients: [
+      { name: 'Wheat Flour', quantity: '2', unit: 'cups' },
+      { name: 'Potatoes (boiled, mashed)', quantity: '3', unit: 'medium' },
+      { name: 'Green Chilies (chopped)', quantity: '2', unit: 'nos' },
+      { name: 'Cumin Seeds', quantity: '0.5', unit: 'tsp' },
+      { name: 'Red Chili Powder', quantity: '0.5', unit: 'tsp' },
+      { name: 'Coriander Leaves', quantity: '2', unit: 'tbsp' },
+      { name: 'Ghee / Butter', quantity: 'for frying', unit: '' },
+      { name: 'Salt', quantity: 'to taste', unit: '' },
+    ],
+    steps: [
+      { stepNumber: 1, text: 'Knead wheat flour with water and salt into soft dough. Rest 15 minutes.' },
+      { stepNumber: 2, text: 'Mix mashed potatoes with green chilies, cumin, chili powder, coriander, and salt for the stuffing.' },
+      { stepNumber: 3, text: 'Take a portion of dough, flatten, place stuffing inside, seal and roll gently into a circle.' },
+      { stepNumber: 4, text: 'Cook on hot tawa with ghee on both sides until golden brown. Serve hot with curd or pickle.' },
+    ],
+  },
+  'noodles': {
+    keywords: ['noodles', 'hakka noodles', 'veg noodles', 'chow mein', 'schezwan noodles'],
+    ingredients: [
+      { name: 'Noodles', quantity: '200', unit: 'gm' },
+      { name: 'Mixed Vegetables (julienned)', quantity: '1.5', unit: 'cups' },
+      { name: 'Garlic (minced)', quantity: '1', unit: 'tbsp' },
+      { name: 'Spring Onions', quantity: '4', unit: 'stalks' },
+      { name: 'Soy Sauce', quantity: '2', unit: 'tbsp' },
+      { name: 'Chili Sauce', quantity: '1', unit: 'tbsp' },
+      { name: 'Vinegar', quantity: '1', unit: 'tsp' },
+      { name: 'Oil', quantity: '3', unit: 'tbsp' },
+      { name: 'Salt', quantity: 'to taste', unit: '' },
+      { name: 'Pepper', quantity: '0.5', unit: 'tsp' },
+    ],
+    steps: [
+      { stepNumber: 1, text: 'Boil noodles as per package instructions. Drain, toss with a little oil to prevent sticking.' },
+      { stepNumber: 2, text: 'Heat oil on high heat. Add garlic, stir-fry vegetables for 2-3 minutes keeping them crunchy.' },
+      { stepNumber: 3, text: 'Add soy sauce, chili sauce, vinegar, salt, and pepper. Toss well.' },
+      { stepNumber: 4, text: 'Add boiled noodles. Toss on high heat for 2 minutes. Garnish with spring onions and serve.' },
+    ],
+  },
+};
+
+// Merge all templates
+Object.assign(RECIPE_TEMPLATES, MORE_TEMPLATES);
+
+// ── Transcript Noise Filter ──────────────────────────────────────
+const COOKING_KEYWORDS = ['cook', 'add', 'mix', 'stir', 'heat', 'boil', 'fry', 'roast', 'bake', 'ingredient', 'recipe', 'salt', 'sugar', 'oil', 'water', 'onion', 'garlic', 'masala', 'spice', 'chicken', 'rice', 'flour', 'cup', 'tbsp', 'tsp', 'minutes', 'ginger', 'tomato', 'pepper', 'chili', 'pan', 'pot', 'oven', 'simmer', 'marinate', 'garnish', 'serve', 'chop', 'slice', 'dice', 'grate', 'blend', 'grind'];
+
+function isTranscriptUseful(transcript: string): boolean {
+  if (!transcript || transcript.length < 30) return false;
+  const lower = transcript.toLowerCase();
+  const matchCount = COOKING_KEYWORDS.filter(kw => lower.includes(kw)).length;
+  // If less than 3 cooking keywords in the entire transcript, it's likely noise
+  return matchCount >= 3;
+}
+
+/**
+ * Pre-parse structured description text to extract ingredient lists
+ */
+function parseDescriptionStructured(description: string): { ingredients: string; steps: string } {
+  let ingredientSection = '';
+  let stepsSection = '';
+  const lines = description.split('\n');
+  let mode: 'none' | 'ingredients' | 'steps' = 'none';
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (/^(ingredients?|what you need|you.?ll need)[:\s]*$/i.test(trimmed)) {
+      mode = 'ingredients'; continue;
+    }
+    if (/^(method|steps|instructions?|directions?|how to make|procedure)[:\s]*$/i.test(trimmed)) {
+      mode = 'steps'; continue;
+    }
+    if (mode === 'ingredients' && trimmed) ingredientSection += trimmed + '\n';
+    if (mode === 'steps' && trimmed) stepsSection += trimmed + '\n';
+  }
+  return { ingredients: ingredientSection.trim(), steps: stepsSection.trim() };
+}
+
 /**
  * Parse any video URL into platform + id + canonical URL
  */
@@ -463,17 +721,19 @@ async function extractFromInstagram(
   // 3. Call AI with all available context (uses Gemini or Groq with key rotation)
   try {
     const { extractWithAI } = await import('./aiFetcher');
-    const prompt = `I need to extract a recipe from this Instagram reel: ${parsedVideo.canonicalUrl}
+    const prompt = `I need to extract a complete recipe from this Instagram cooking reel: ${parsedVideo.canonicalUrl}
 
 Reel ID: ${reelId}
 ${title ? `Title/info: ${title}` : ''}
 
-This Instagram cooking video may show ingredients and measurements as on-screen text overlays (visual-only, no voiceover). Based on the URL, reel ID, and your knowledge base:
+IMPORTANT: This is likely a VISUAL-ONLY cooking video — it may have background music only, no voiceover. Ingredients and steps may be shown as on-screen text overlays or simply shown visually while cooking. Use the title, any available description, and your extensive cooking knowledge to provide a COMPLETE recipe.
 
-1. Identify the recipe name
-2. List ALL ingredients with exact quantities and units  
-3. Write step-by-step cooking instructions
+Instructions:
+1. Identify the recipe name from the title/description
+2. List ALL ingredients with exact quantities and units — do NOT skip any
+3. Write detailed step-by-step cooking instructions
 4. Estimate prep time in minutes
+5. If the title mentions a dish you recognize, provide the FULL authentic recipe
 
 Return ONLY a raw JSON object (no markdown, no code fences):
 {"name":"Recipe Name","ingredients":[{"name":"Ingredient","quantity":"2","unit":"tbsp"}],"steps":[{"stepNumber":1,"text":"Step description"}],"prepTimeMinutes":30}`;
@@ -608,18 +868,41 @@ export async function extractRecipeFromVideo(
     try {
       const { extractWithAI } = await import('./aiFetcher');
 
+      // Pre-parse structured description sections
+      const descStructured = parseDescriptionStructured(pageData.description);
+      const hasUsefulTranscript = isTranscriptUseful(rawTranscript);
+
       // Build a rich context string for the AI
       const contextParts: string[] = [];
       if (title) contextParts.push(`Video Title: ${title}`);
       if (channelName) contextParts.push(`Channel: ${channelName}`);
-      if (pageData.description) contextParts.push(`Video Description:\n${pageData.description.slice(0, 3000)}`);
-      if (rawTranscript) contextParts.push(`Video Transcript/Captions:\n${rawTranscript.slice(0, 4000)}`);
+      if (descStructured.ingredients) contextParts.push(`Ingredients Found in Description:\n${descStructured.ingredients}`);
+      if (descStructured.steps) contextParts.push(`Steps Found in Description:\n${descStructured.steps}`);
+      if (pageData.description) contextParts.push(`Full Video Description:\n${pageData.description.slice(0, 3000)}`);
+      if (hasUsefulTranscript) contextParts.push(`Video Transcript/Captions:\n${rawTranscript.slice(0, 4000)}`);
 
-      const prompt = `Extract a complete cooking recipe from this YouTube video information:
+      // Choose prompt style based on what data is available
+      const isVisualOnly = !hasUsefulTranscript;
+
+      const prompt = isVisualOnly
+        ? `This is a VISUAL-ONLY cooking video (background music, no voiceover). The recipe must be identified from the title, description, and your cooking knowledge.
 
 ${contextParts.join('\n\n')}
 
-Analyze ALL the information above — the title, description, and transcript/captions. Ingredients may appear in ANY of these: written in the description, spoken in the video (captured in transcript), or implied by the title.
+Since this video has NO spoken words or captions, use:
+1. The video TITLE to identify the dish
+2. The DESCRIPTION for any listed ingredients or steps
+3. Your extensive cooking knowledge to provide a COMPLETE recipe with ALL ingredients and detailed step-by-step instructions
+
+Return ONLY a raw JSON object (no markdown, no code fences):
+{"name":"Recipe Name","ingredients":[{"name":"Ingredient","quantity":"2","unit":"tbsp"}],"steps":[{"stepNumber":1,"text":"Step description"}],"prepTimeMinutes":30}
+
+Provide a COMPLETE recipe — do not skip any ingredients. Estimate reasonable quantities.`
+        : `Extract a complete cooking recipe from this YouTube video information:
+
+${contextParts.join('\n\n')}
+
+Analyze ALL the information above — the title, description, and transcript/captions. Ingredients may appear in ANY of these: written in the description, spoken in the video (captured in transcript), or implied by the title. Note: the speaker may talk casually or off-topic — focus ONLY on cooking-related content.
 
 Return ONLY a raw JSON object (no markdown, no code fences):
 {"name":"Recipe Name","ingredients":[{"name":"Ingredient","quantity":"2","unit":"tbsp"}],"steps":[{"stepNumber":1,"text":"Step description"}],"prepTimeMinutes":30}

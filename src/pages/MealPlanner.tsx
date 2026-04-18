@@ -8,14 +8,17 @@ import GlassCard from '@/components/GlassCard';
 import { cn } from '@/lib/utils';
 import {
   ChevronLeft, ChevronRight, ChevronDown, Check, Clock, X, Calendar, Sparkles,
-  Minus, Plus, Users, Download, ShoppingCart, CookingPot
+  Minus, Plus, Users, Download, ShoppingCart, CookingPot, Loader2, ChefHat
 } from 'lucide-react';
 import { downloadRecipePDF } from '@/lib/recipePdfGenerator';
+import WeekPlanPreview from '@/components/WeekPlanPreview';
+import CookingMode from '@/components/CookingMode';
+import { generateWeekPlan, type WeekPlanResult } from '@/lib/aiWeekPlanner';
 
 const MealPlanner = () => {
   const {
     recipes, getMealPlan, setMealForSlot, toggleMealComplete,
-    setServingsForSlot, getServingsForSlot, getRecipesBySlot,
+    setServingsForSlot, getServingsForSlot, getRecipesBySlot, mealPlans,
   } = useMealPlanner();
   const { deductIngredients } = useGrocery();
 
@@ -23,6 +26,15 @@ const MealPlanner = () => {
   const [selectingSlot, setSelectingSlot] = useState<MealSlot | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedSlot, setExpandedSlot] = useState<MealSlot | null>(null);
+  const [selectorTab, setSelectorTab] = useState<'all' | 'recent'>('all');
+
+  const [showWeekPreview, setShowWeekPreview] = useState(false);
+  const [weekPreviewData, setWeekPreviewData] = useState<WeekPlanResult | null>(null);
+  const [isPlanning, setIsPlanning] = useState(false);
+  const [cookingRecipe, setCookingRecipe] = useState<{recipe: Recipe, servings: number, slot: MealSlot} | null>(null);
+  
+  const { items: inventory } = useGrocery();
+  const { activeProfile } = useMealPlanner();
 
   const dateStr = currentDate.toISOString().split('T')[0];
   const plan = getMealPlan(dateStr);
@@ -69,6 +81,23 @@ const MealPlanner = () => {
     });
   }, [selectingSlot, recipes, searchQuery]);
 
+  const recentCompletedRecipes = useMemo(() => {
+    const plansList = Object.values(mealPlans).sort((a,b) => b.date.localeCompare(a.date));
+    const recentIds = new Set<string>();
+    for (const p of plansList) {
+      if (p.completedMeals.length > 0) {
+        p.completedMeals.forEach(slot => {
+          if (p.meals[slot]) recentIds.add(p.meals[slot]!);
+        });
+      }
+    }
+    return Array.from(recentIds).slice(0, 10).map(id => recipes.find(r => r.id === id)).filter(Boolean) as Recipe[];
+  }, [mealPlans, recipes]);
+
+  const displayRecipes = selectorTab === 'recent' 
+    ? recentCompletedRecipes.filter(r => r.mealSlot === selectingSlot || !selectingSlot)
+    : filteredRecipesForSlot;
+
   const completedCount = plan?.completedMeals.length || 0;
   const assignedCount = MEAL_SLOT_CONFIG.filter(s => getRecipeForSlot(s.key)).length;
 
@@ -89,6 +118,34 @@ const MealPlanner = () => {
     toggleMealComplete(dateStr, slotKey);
   };
 
+  const handlePlanWeek = async () => {
+    setIsPlanning(true);
+    try {
+      const data = await generateWeekPlan({
+        startDate: dateStr,
+        inventory: inventory.filter(i => i.status === 'available'),
+        recipes,
+        deficiencies: activeProfile.deficiencies || [],
+        profileType: activeProfile.profileType || 'general health'
+      });
+      setWeekPreviewData(data);
+      setShowWeekPreview(true);
+    } catch (e: any) {
+      alert(e.message || 'Failed to generate plan');
+    } finally {
+      setIsPlanning(false);
+    }
+  };
+
+  const handleApplyWeekPlan = (data: WeekPlanResult) => {
+    Object.entries(data).forEach(([day, slots]) => {
+      Object.entries(slots).forEach(([slot, recipeId]) => {
+        if (recipeId) setMealForSlot(day, slot as MealSlot, recipeId);
+      });
+    });
+    setShowWeekPreview(false);
+  };
+
   return (
     <div className="space-y-4 pb-8">
       {/* Header */}
@@ -97,9 +154,19 @@ const MealPlanner = () => {
           <Calendar size={22} className="text-emerald-500" />
           Meal Plan
         </h1>
-        <div className="text-xs text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800 px-3 py-1.5 rounded-full font-medium flex items-center gap-1.5">
-          <CookingPot size={12} className="text-emerald-500" />
-          {completedCount}/{assignedCount} cooked
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={handlePlanWeek} 
+            disabled={isPlanning}
+            className="text-[11px] font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1.5 rounded-full hover:scale-105 active:scale-95 transition-all shadow-sm flex items-center gap-1"
+          >
+            {isPlanning ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+            {isPlanning ? 'Planning...' : 'Plan My Week'}
+          </button>
+          <div className="text-xs text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800 px-3 py-1.5 rounded-full font-medium flex items-center gap-1.5">
+            <CookingPot size={12} className="text-emerald-500" />
+            {completedCount}/{assignedCount} cooked
+          </div>
         </div>
       </div>
 
@@ -342,21 +409,37 @@ const MealPlanner = () => {
                     </div>
 
                     {/* ── Action Buttons ── */}
-                    <div className="flex gap-2">
-                      {!isComplete && (
+                    <div className="flex flex-col gap-2">
+                       <button
+                         onClick={(e) => { e.stopPropagation(); setCookingRecipe({ recipe, servings, slot: slot.key }); }}
+                         className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-sm shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                       >
+                         <ChefHat size={18} /> Start Cooking Mode
+                       </button>
+
+                      <div className="flex gap-2">
+                        {!isComplete ? (
+                          <button
+                            onClick={() => handleMealCompletion(slot.key)}
+                            className="flex-1 py-3 mt-1 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 text-xs font-bold hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-slate-700 dark:hover:text-emerald-400 transition-all flex items-center justify-center gap-1.5 border border-gray-200 dark:border-slate-700"
+                          >
+                            <Check size={14} strokeWidth={2.5} /> Skip & Mark Complete
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleMealCompletion(slot.key)}
+                            className="flex-1 py-3 mt-1 rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400 text-xs font-bold hover:bg-rose-100 transition-all flex items-center justify-center gap-1.5 border border-rose-200 dark:border-rose-900/50"
+                          >
+                            <X size={14} strokeWidth={2.5} /> Mark Incomplete
+                          </button>
+                        )}
                         <button
-                          onClick={() => handleMealCompletion(slot.key)}
-                          className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md transition-all"
+                          onClick={() => downloadRecipePDF(recipe)}
+                          className="py-3 px-4 mt-1 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 text-xs font-bold hover:bg-emerald-50 dark:hover:bg-slate-700 hover:border-emerald-200 dark:hover:border-emerald-800 hover:text-emerald-700 dark:hover:text-emerald-400 transition-all flex items-center justify-center shrink-0"
                         >
-                          <Check size={14} strokeWidth={2.5} /> Mark Complete & Deduct Grocery
+                          <Download size={16} />
                         </button>
-                      )}
-                      <button
-                        onClick={() => downloadRecipePDF(recipe)}
-                        className="py-2.5 px-4 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 text-xs font-bold hover:bg-emerald-50 dark:hover:bg-slate-700 hover:border-emerald-200 dark:hover:border-emerald-800 hover:text-emerald-700 dark:hover:text-emerald-400 transition-all flex items-center gap-1.5"
-                      >
-                        <Download size={14} /> PDF
-                      </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -391,12 +474,16 @@ const MealPlanner = () => {
                 className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:text-slate-200"
                 autoFocus
               />
+              <div className="flex px-4 mt-3 gap-4 border-b border-gray-100 dark:border-slate-800 -mx-4">
+                 <button onClick={() => setSelectorTab('all')} className={cn("pb-2 text-sm font-semibold border-b-2 transition-all", selectorTab === 'all' ? "border-emerald-500 text-emerald-600 dark:text-emerald-400" : "border-transparent text-gray-500 dark:text-slate-400")}>All Recipes</button>
+                 <button onClick={() => setSelectorTab('recent')} className={cn("pb-2 text-sm font-semibold border-b-2 transition-all", selectorTab === 'recent' ? "border-emerald-500 text-emerald-600 dark:text-emerald-400" : "border-transparent text-gray-500 dark:text-slate-400")}>Cook Again (Recent)</button>
+              </div>
             </div>
             <div className="overflow-y-auto p-4 pb-8 space-y-2 flex-1">
-              {filteredRecipesForSlot.length === 0 ? (
-                <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-8">No recipes for this meal slot.</p>
+              {displayRecipes.length === 0 ? (
+                <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-8">No recipes found.</p>
               ) : (
-                filteredRecipesForSlot.map(recipe => (
+                displayRecipes.map(recipe => (
                   <button
                     key={recipe.id}
                     onClick={() => {
@@ -427,6 +514,27 @@ const MealPlanner = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {showWeekPreview && weekPreviewData && (
+        <WeekPlanPreview 
+          planData={weekPreviewData} 
+          onApply={handleApplyWeekPlan} 
+          onCancel={() => setShowWeekPreview(false)} 
+        />
+      )}
+
+      {cookingRecipe && (
+        <CookingMode
+          recipe={cookingRecipe.recipe}
+          servings={cookingRecipe.servings}
+          onClose={() => setCookingRecipe(null)}
+          onMarkComplete={() => {
+            if (!plan?.completedMeals.includes(cookingRecipe.slot)) {
+               handleMealCompletion(cookingRecipe.slot);
+            }
+          }}
+        />
       )}
     </div>
   );

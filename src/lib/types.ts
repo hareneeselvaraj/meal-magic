@@ -6,16 +6,21 @@
 
 // ── User Profiles ────────────────────────────────────────
 export type Language = 'en' | 'ta';
+export type ProfileType = 'pregnancy' | 'heart_health';
 
 export interface UserProfile {
   id: string;
   email: string;
   displayName: string;
+  profileType: ProfileType;
   weight: number;       // kg
   height: number;       // cm
   age: number;
   deficiencies: string[];  // ['iron', 'vitamin_d', 'ferritin', 'b12']
   preferredLanguage: Language;
+  preferredCuisines: string[];
+  spiceLevel: 'mild' | 'medium' | 'spicy';
+  isVegetarian: boolean;
   avatarUrl?: string;
   createdAt: Date | number;
   updatedAt: Date | number;
@@ -92,6 +97,7 @@ export interface Recipe {
   imageUrl: string | null;
   createdBy: string;
   isPublic: boolean;
+  isFavourite?: boolean;
   createdAt: Date | number;
   updatedAt: Date | number;
 }

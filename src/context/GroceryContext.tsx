@@ -6,6 +6,7 @@ import {
   type GroceryItemData,
   type GroceryCategory,
 } from '@/data/mockData';
+import type { BillRecord } from '@/lib/spendTracker';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -34,6 +35,10 @@ interface GroceryContextValue {
 
   // Bulk operations
   bulkAddItems: (items: Omit<GroceryItemData, 'id'>[]) => void;
+
+  // Track spending
+  billHistory: BillRecord[];
+  addBill: (bill: Omit<BillRecord, 'id'>) => void;
 
   // Grocery Intelligence
   deductIngredients: (ingredients: { name: string; quantity: string; unit: string }[]) => void;
@@ -86,34 +91,23 @@ const GroceryContext = createContext<GroceryContextValue | null>(null);
 
 // ─── Provider ────────────────────────────────────────────────────────────────
 
-export const GroceryProvider = ({ children }: { children: ReactNode }) => {
-  const [items, setItems] = useState<GroceryItemData[]>([]);
-  const [categories, setCategories] = useState<GroceryCategory[]>([]);
-  const [loaded, setLoaded] = useState(false);
-  const hydrated = useRef(false);
+function loadJSON<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch { return fallback; }
+}
 
-  // ── Hydrate from IndexedDB on mount ──
-  useEffect(() => {
-    (async () => {
-      try {
-        const [savedItems, savedCats] = await Promise.all([
-          readAll('groceryItems'),
-          readAll('groceryCategories'),
-        ]);
-        setItems(savedItems.length ? savedItems : initialItems);
-        setCategories(savedCats.length ? savedCats : initialCategories);
-      } catch {
-        setItems(initialItems);
-        setCategories(initialCategories);
-      }
-      hydrated.current = true;
-      setLoaded(true);
-    })();
-  }, []);
+export const GroceryProvider = ({ children }: { children: ReactNode }) => {
+  const [items, setItems] = useState<GroceryItemData[]>(() => loadJSON('nm_groceryItems', initialItems));
+  const [categories, setCategories] = useState<GroceryCategory[]>(() => loadJSON('nm_groceryCategories', initialCategories));
+  const [billHistory, setBillHistory] = useState<BillRecord[]>(() => loadJSON('nm_billHistory', []));
+  const [loaded, setLoaded] = useState(true);
 
   // ── Auto-persist on change ──
-  useEffect(() => { if (hydrated.current) writeAll('groceryItems', items); }, [items]);
-  useEffect(() => { if (hydrated.current) writeAll('groceryCategories', categories); }, [categories]);
+  useEffect(() => { localStorage.setItem('nm_groceryItems', JSON.stringify(items)); }, [items]);
+  useEffect(() => { localStorage.setItem('nm_groceryCategories', JSON.stringify(categories)); }, [categories]);
+  useEffect(() => { localStorage.setItem('nm_billHistory', JSON.stringify(billHistory)); }, [billHistory]);
 
   const deriveStatus = (qty: number): GroceryItemData['status'] => {
     if (qty <= 0) return 'missing';
@@ -172,6 +166,10 @@ export const GroceryProvider = ({ children }: { children: ReactNode }) => {
       })),
       ...prev,
     ]);
+  };
+
+  const addBill = (bill: Omit<BillRecord, 'id'>) => {
+    setBillHistory((prev) => [{ ...bill, id: `bill_${Date.now()}` }, ...prev]);
   };
 
   // ── Grocery Intelligence ─────────────────────────────────────────────────
@@ -238,6 +236,7 @@ export const GroceryProvider = ({ children }: { children: ReactNode }) => {
         items, addItem, updateItem, deleteItem,
         categories, addCategory, updateCategory, deleteCategory,
         bulkAddItems,
+        billHistory, addBill,
         deductIngredients, checkIngredientAvailability,
       }}
     >

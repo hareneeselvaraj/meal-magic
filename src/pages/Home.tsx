@@ -4,8 +4,10 @@ import { useGrocery } from '@/context/GroceryContext';
 import { healthTips } from '@/data/seedData';
 import { MEAL_SLOT_CONFIG } from '@/lib/types';
 import GlassCard from '@/components/GlassCard';
+import AIMealSuggestions from '@/components/AIMealSuggestions';
+import NutritionSummary from '@/components/NutritionSummary';
 import { cn } from '@/lib/utils';
-import { Check, Sparkles, Heart, Sun, Moon, Leaf, User, Bell, AlertTriangle, Utensils, CalendarDays, ChevronRight } from 'lucide-react';
+import { Check, Sparkles, Heart, Sun, Moon, Leaf, User, Bell, AlertTriangle, Utensils, CalendarDays, ChevronRight, Clock } from 'lucide-react';
 import { getLowStockItems, getCookableRecipes } from '@/lib/shoppingList';
 
 interface HomeProps {
@@ -41,12 +43,14 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
   const cookableRecipes = useMemo(() => getCookableRecipes(recipes, inventory).slice(0, 3), [recipes, inventory]);
 
   const dailyTip = useMemo(() => {
-    const relevant = healthTips.filter(t =>
-      t.forProfiles.includes(activeProfile.profileType)
-    );
+    let relevant = healthTips;
+    if (activeProfile.deficiencies?.length > 0) {
+      const match = healthTips.filter(t => t.forDeficiencies?.some(d => activeProfile.deficiencies.includes(d)));
+      if (match.length > 0) relevant = match;
+    }
     const dayIndex = today.getDate() % relevant.length;
     return relevant[dayIndex] || healthTips[0];
-  }, [activeProfile.profileType]);
+  }, [activeProfile.deficiencies]);
 
   // Resolve planned recipe names for today
   const todayMeals = useMemo(() => {
@@ -67,6 +71,8 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
 
   // Count how many meals have recipes assigned
   const assignedCount = todayMeals.filter(m => m.recipe).length;
+
+  const favoriteRecipes = useMemo(() => recipes.filter(r => r.isFavourite), [recipes]);
 
   return (
     <div className="space-y-5 pb-8 relative dark:text-slate-100">
@@ -130,6 +136,29 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
         </div>
       </GlassCard>
 
+      {/* Favorites Row */}
+      {favoriteRecipes.length > 0 && (
+        <div className="animate-fade-in">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <Heart size={18} className="text-rose-500 fill-current" />
+              Your Favourites
+            </h2>
+          </div>
+          <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-none">
+            {favoriteRecipes.map(recipe => (
+              <div key={recipe.id} onClick={onNavigateToPlan} className="min-w-[200px] max-w-[220px] bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm border border-white/40 dark:border-slate-800 rounded-2xl p-3 shrink-0 cursor-pointer hover:border-emerald-200 transition-all group">
+                 <h3 className="text-sm font-bold text-gray-800 dark:text-slate-200 truncate group-hover:text-emerald-600 transition-colors">{recipe.name}</h3>
+                 <div className="flex items-center gap-2 mt-2">
+                   <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/50 px-2 py-0.5 rounded-full">{recipe.cuisineName || 'Mix'}</span>
+                   <span className="text-[10px] text-gray-500 dark:text-slate-400 flex items-center gap-1 font-medium"><Clock size={10} /> {recipe.prepTimeMinutes + recipe.cookTimeMinutes}m</span>
+                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Today's Meals — Read-only overview */}
       <div>
         <div className="flex items-center justify-between mb-3">
@@ -184,6 +213,9 @@ const Home = ({ onOpenProfile, onNavigateToPlan }: HomeProps) => {
           ))}
         </div>
       </div>
+
+      <AIMealSuggestions />
+      <NutritionSummary />
 
       {/* Dashboard Widgets */}
       <div className="grid grid-cols-2 gap-3">
